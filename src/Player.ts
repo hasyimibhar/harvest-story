@@ -73,8 +73,9 @@ export class Player extends Sprite {
     private move(dx: number, dy: number): void {
         const newX = this.x + dx;
         const newY = this.y + dy;
-        // Use a margin slightly smaller than half the tile size to allow sliding
-        const margin = (TileMap.TILE_SIZE / 2) - 0.1;
+        // Use a margin smaller than half the tile size to allow sliding
+        // This provides a "forgiving" collision box that feels better for gameplay
+        const margin = (TileMap.TILE_SIZE / 2) - 2;
 
         const left = newX - margin;
         const right = newX + margin;
