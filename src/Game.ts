@@ -50,6 +50,10 @@ export class Game {
         this.tileMap = new TileMap(grassTexture, rockTexture);
         world.addChild(this.tileMap);
 
+        // Soil Layer (rendered first, below everything)
+        const soilLayer = new Container();
+        world.addChild(soilLayer);
+
         // Object Layer
         const objectLayer = new Container();
         world.addChild(objectLayer);
@@ -69,7 +73,7 @@ export class Game {
             for (let y = startY; y < startY + 10; y++) {
                 const soil = new Soil(x, y, this.app.renderer);
                 objects.push(soil);
-                objectLayer.addChild(soil);
+                soilLayer.addChild(soil); // Add to soilLayer instead of objectLayer
             }
         }
 
@@ -114,14 +118,24 @@ export class Game {
             objects,
             (obj: GameObject) => {
                 objects.push(obj);
-                objectLayer.addChild(obj);
+                // Add soil to soilLayer, everything else to objectLayer
+                if (obj instanceof Soil) {
+                    soilLayer.addChild(obj);
+                } else {
+                    objectLayer.addChild(obj);
+                }
             },
             (obj: GameObject) => {
                 const index = objects.indexOf(obj);
                 if (index !== -1) {
                     objects.splice(index, 1);
                 }
-                objectLayer.removeChild(obj);
+                // Remove from appropriate layer
+                if (obj instanceof Soil) {
+                    soilLayer.removeChild(obj);
+                } else {
+                    objectLayer.removeChild(obj);
+                }
             }
         );
         this.player.x = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
@@ -132,13 +146,17 @@ export class Game {
         world.addChild(highlightGraphics);
         this.player.setHighlightGraphics(highlightGraphics);
 
-        world.addChild(this.player);
+        // Add player to objectLayer for proper depth sorting
+        objectLayer.addChild(this.player);
 
         this.app.ticker.add((ticker) => {
             if (this.player) {
                 this.player.update(ticker);
             }
             this.inputManager.update();
+
+            // Sort objectLayer children by y-coordinate for proper depth rendering
+            objectLayer.children.sort((a, b) => a.y - b.y);
         });
     }
 }
