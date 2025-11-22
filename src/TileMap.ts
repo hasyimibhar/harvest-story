@@ -6,14 +6,10 @@ export class TileMap extends Container {
     public static readonly MAP_HEIGHT = 20;
 
     private mapData: number[][] = [];
-    private highlightGraphics: Graphics;
-
     constructor(private grassTexture: Texture, private rockTexture: Texture) {
         super();
-        this.highlightGraphics = new Graphics();
         this.generateMap();
         this.renderMap();
-        this.addChild(this.highlightGraphics);
     }
 
     private generateMap(): void {
@@ -50,10 +46,10 @@ export class TileMap extends Container {
         }
     }
 
-    public highlightTile(x: number, y: number): void {
-        this.highlightGraphics.clear();
+    public highlightTile(x: number, y: number, graphics: Graphics): void {
+        graphics.clear();
         if (x >= 0 && x < TileMap.MAP_WIDTH && y >= 0 && y < TileMap.MAP_HEIGHT) {
-            this.highlightGraphics
+            graphics
                 .rect(x * TileMap.TILE_SIZE, y * TileMap.TILE_SIZE, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
                 .stroke({ width: 2, color: 0xffff00 });
         }

@@ -1,4 +1,4 @@
-import { Sprite, Texture, Ticker } from "pixi.js";
+import { Sprite, Texture, Ticker, Graphics } from "pixi.js";
 import { InputManager } from "./InputManager";
 import { TileMap } from "./TileMap";
 import { GameObject } from "./GameObject";
@@ -86,7 +86,15 @@ export class Player extends Sprite {
         }
     }
 
+    private highlightGraphics: Graphics | null = null;
+
+    public setHighlightGraphics(graphics: Graphics): void {
+        this.highlightGraphics = graphics;
+    }
+
     private updateHighlight(): void {
+        if (!this.highlightGraphics) return;
+
         const gridX = Math.floor(this.x / TileMap.TILE_SIZE);
         const gridY = Math.floor(this.y / TileMap.TILE_SIZE);
         let targetX = gridX;
@@ -107,7 +115,7 @@ export class Player extends Sprite {
                 break;
         }
 
-        this.tileMap.highlightTile(targetX, targetY);
+        this.tileMap.highlightTile(targetX, targetY, this.highlightGraphics);
     }
 
     private move(dx: number, dy: number): void {
@@ -180,7 +188,7 @@ export class Player extends Sprite {
 
         // Check object collision
         for (const obj of this.objects) {
-            if (obj.isAt(gridX, gridY)) {
+            if (obj.isSolid && obj.isAt(gridX, gridY)) {
                 return true;
             }
         }

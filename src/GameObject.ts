@@ -2,6 +2,8 @@ import { Container } from "pixi.js";
 import { TileMap } from "./TileMap";
 
 export class GameObject extends Container {
+    public isSolid: boolean = true;
+
     constructor(
         public gridX: number,
         public gridY: number,
