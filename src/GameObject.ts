@@ -27,4 +27,14 @@ export class GameObject extends Container {
     public interact(): boolean {
         return false;
     }
+
+    public isPickupable: boolean = false;
+
+    public canBePlacedOn(tileType: number): boolean {
+        return true;
+    }
+
+    public onPlace(): boolean {
+        return true;
+    }
 }

@@ -5,6 +5,8 @@ import { InputManager } from "./InputManager";
 import { GameObject } from "./GameObject";
 import { Boulder } from "./Boulder";
 import { Soil } from "./Soil";
+import { Fence } from "./Fence";
+import { Weed } from "./Weed";
 
 export class Game {
     private app: Application;
@@ -87,7 +89,41 @@ export class Game {
         objects.push(testBoulder);
         objectLayer.addChild(testBoulder);
 
-        this.player = new Player(playerTexture, this.inputManager, this.tileMap, objects);
+        // Add some fences
+        for (let i = 0; i < 5; i++) {
+            const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
+            const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
+            const fence = new Fence(x, y, this.app.renderer);
+            objects.push(fence);
+            objectLayer.addChild(fence);
+        }
+
+        // Add some weeds
+        for (let i = 0; i < 5; i++) {
+            const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
+            const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
+            const weed = new Weed(x, y, this.app.renderer);
+            objects.push(weed);
+            objectLayer.addChild(weed);
+        }
+
+        this.player = new Player(
+            playerTexture,
+            this.inputManager,
+            this.tileMap,
+            objects,
+            (obj: GameObject) => {
+                objects.push(obj);
+                objectLayer.addChild(obj);
+            },
+            (obj: GameObject) => {
+                const index = objects.indexOf(obj);
+                if (index !== -1) {
+                    objects.splice(index, 1);
+                }
+                objectLayer.removeChild(obj);
+            }
+        );
         this.player.x = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
         this.player.y = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
 
