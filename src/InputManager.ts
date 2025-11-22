@@ -1,20 +1,28 @@
 export class InputManager {
-    public keys: { [key: string]: boolean } = {};
+    private keys: { [key: string]: boolean } = {};
+    private previousKeys: { [key: string]: boolean } = {};
 
     constructor() {
-        window.addEventListener("keydown", this.onKeyDown.bind(this));
-        window.addEventListener("keyup", this.onKeyUp.bind(this));
+        window.addEventListener("keydown", (e) => {
+            this.keys[e.code] = true;
+        });
+
+        window.addEventListener("keyup", (e) => {
+            this.keys[e.code] = false;
+        });
     }
 
-    private onKeyDown(event: KeyboardEvent): void {
-        this.keys[event.code] = true;
-    }
-
-    private onKeyUp(event: KeyboardEvent): void {
-        this.keys[event.code] = false;
+    public update(): void {
+        // Copy current state to previous state
+        // This should be called at the END of the game loop frame
+        this.previousKeys = { ...this.keys };
     }
 
     public isKeyDown(keyCode: string): boolean {
         return !!this.keys[keyCode];
+    }
+
+    public isJustPressed(keyCode: string): boolean {
+        return !!this.keys[keyCode] && !this.previousKeys[keyCode];
     }
 }

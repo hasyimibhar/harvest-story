@@ -1,7 +1,9 @@
-import { Application, Graphics } from "pixi.js";
+import { Application, Graphics, Container } from "pixi.js";
 import { TileMap } from "./TileMap";
 import { Player } from "./Player";
 import { InputManager } from "./InputManager";
+import { GameObject } from "./GameObject";
+import { Boulder } from "./Boulder";
 
 export class Game {
     private app: Application;
@@ -15,13 +17,15 @@ export class Game {
     }
 
     public async init(): Promise<void> {
+        console.log("Initializing PixiJS app...");
         await this.app.init({ background: "#1099bb", resizeTo: window });
         document.getElementById("pixi-container")!.appendChild(this.app.canvas);
-
+        console.log("PixiJS app initialized");
         this.createScene();
     }
 
     private createScene(): void {
+        console.log("Creating scene...");
         const grassGraphics = new Graphics().rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE).fill(0x00FF00);
         const grassTexture = this.app.renderer.generateTexture(grassGraphics);
 
@@ -34,7 +38,16 @@ export class Game {
         this.tileMap = new TileMap(grassTexture, rockTexture);
         this.app.stage.addChild(this.tileMap);
 
-        this.player = new Player(playerTexture, this.inputManager, this.tileMap);
+        // Object Layer
+        const objectLayer = new Container();
+        this.app.stage.addChild(objectLayer);
+
+        const objects: GameObject[] = [];
+        const boulder = new Boulder(5, 5, this.app.renderer);
+        objects.push(boulder);
+        objectLayer.addChild(boulder);
+
+        this.player = new Player(playerTexture, this.inputManager, this.tileMap, objects);
         this.player.x = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
         this.player.y = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
         this.app.stage.addChild(this.player);
@@ -43,6 +56,7 @@ export class Game {
             if (this.player) {
                 this.player.update(ticker);
             }
+            this.inputManager.update();
         });
     }
 }

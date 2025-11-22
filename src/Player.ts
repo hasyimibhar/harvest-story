@@ -1,6 +1,7 @@
 import { Sprite, Texture, Ticker } from "pixi.js";
 import { InputManager } from "./InputManager";
 import { TileMap } from "./TileMap";
+import { GameObject } from "./GameObject";
 
 export class Player extends Sprite {
     private speed = 2;
@@ -9,7 +10,8 @@ export class Player extends Sprite {
     constructor(
         texture: Texture,
         private inputManager: InputManager,
-        private tileMap: TileMap
+        private tileMap: TileMap,
+        private objects: GameObject[]
     ) {
         super(texture);
         this.anchor.set(0.5);
@@ -43,7 +45,45 @@ export class Player extends Sprite {
             this.move(dx, dy);
         }
 
+        if (this.inputManager.isJustPressed("KeyX")) {
+            this.interact();
+        }
+
         this.updateHighlight();
+    }
+
+    private interact(): void {
+        const gridX = Math.floor(this.x / TileMap.TILE_SIZE);
+        const gridY = Math.floor(this.y / TileMap.TILE_SIZE);
+        let targetX = gridX;
+        let targetY = gridY;
+
+        switch (this.direction) {
+            case "up":
+                targetY -= 1;
+                break;
+            case "down":
+                targetY += 1;
+                break;
+            case "left":
+                targetX -= 1;
+                break;
+            case "right":
+                targetX += 1;
+                break;
+        }
+
+        for (let i = 0; i < this.objects.length; i++) {
+            const obj = this.objects[i];
+            if (obj.isAt(targetX, targetY)) {
+                const destroyed = obj.interact();
+                if (destroyed) {
+                    this.objects.splice(i, 1);
+                    i--;
+                }
+                break; // Only interact with one object at a time
+            }
+        }
     }
 
     private updateHighlight(): void {
@@ -82,22 +122,10 @@ export class Player extends Sprite {
         const top = newY - margin;
         const bottom = newY + margin;
 
-        const topLeftBlocked = this.tileMap.isBlocked(
-            Math.floor(left / TileMap.TILE_SIZE),
-            Math.floor(top / TileMap.TILE_SIZE)
-        );
-        const topRightBlocked = this.tileMap.isBlocked(
-            Math.floor(right / TileMap.TILE_SIZE),
-            Math.floor(top / TileMap.TILE_SIZE)
-        );
-        const bottomLeftBlocked = this.tileMap.isBlocked(
-            Math.floor(left / TileMap.TILE_SIZE),
-            Math.floor(bottom / TileMap.TILE_SIZE)
-        );
-        const bottomRightBlocked = this.tileMap.isBlocked(
-            Math.floor(right / TileMap.TILE_SIZE),
-            Math.floor(bottom / TileMap.TILE_SIZE)
-        );
+        const topLeftBlocked = this.isBlocked(left, top);
+        const topRightBlocked = this.isBlocked(right, top);
+        const bottomLeftBlocked = this.isBlocked(left, bottom);
+        const bottomRightBlocked = this.isBlocked(right, bottom);
 
         if (!topLeftBlocked && !topRightBlocked && !bottomLeftBlocked && !bottomRightBlocked) {
             this.x = newX;
@@ -112,10 +140,10 @@ export class Player extends Sprite {
                 const topOnly = this.y - margin;
                 const bottomOnly = this.y + margin;
 
-                const tl = this.tileMap.isBlocked(Math.floor(leftOnly / TileMap.TILE_SIZE), Math.floor(topOnly / TileMap.TILE_SIZE));
-                const tr = this.tileMap.isBlocked(Math.floor(rightOnly / TileMap.TILE_SIZE), Math.floor(topOnly / TileMap.TILE_SIZE));
-                const bl = this.tileMap.isBlocked(Math.floor(leftOnly / TileMap.TILE_SIZE), Math.floor(bottomOnly / TileMap.TILE_SIZE));
-                const br = this.tileMap.isBlocked(Math.floor(rightOnly / TileMap.TILE_SIZE), Math.floor(bottomOnly / TileMap.TILE_SIZE));
+                const tl = this.isBlocked(leftOnly, topOnly);
+                const tr = this.isBlocked(rightOnly, topOnly);
+                const bl = this.isBlocked(leftOnly, bottomOnly);
+                const br = this.isBlocked(rightOnly, bottomOnly);
 
                 if (!tl && !tr && !bl && !br) {
                     this.x = newXOnly;
@@ -129,15 +157,34 @@ export class Player extends Sprite {
                 const topOnly = newYOnly - margin;
                 const bottomOnly = newYOnly + margin;
 
-                const tl = this.tileMap.isBlocked(Math.floor(leftOnly / TileMap.TILE_SIZE), Math.floor(topOnly / TileMap.TILE_SIZE));
-                const tr = this.tileMap.isBlocked(Math.floor(rightOnly / TileMap.TILE_SIZE), Math.floor(topOnly / TileMap.TILE_SIZE));
-                const bl = this.tileMap.isBlocked(Math.floor(leftOnly / TileMap.TILE_SIZE), Math.floor(bottomOnly / TileMap.TILE_SIZE));
-                const br = this.tileMap.isBlocked(Math.floor(rightOnly / TileMap.TILE_SIZE), Math.floor(bottomOnly / TileMap.TILE_SIZE));
+                const tl = this.isBlocked(leftOnly, topOnly);
+                const tr = this.isBlocked(rightOnly, topOnly);
+                const bl = this.isBlocked(leftOnly, bottomOnly);
+                const br = this.isBlocked(rightOnly, bottomOnly);
 
                 if (!tl && !tr && !bl && !br) {
                     this.y = newYOnly;
                 }
             }
         }
+    }
+
+    private isBlocked(x: number, y: number): boolean {
+        const gridX = Math.floor(x / TileMap.TILE_SIZE);
+        const gridY = Math.floor(y / TileMap.TILE_SIZE);
+
+        // Check map collision
+        if (this.tileMap.isBlocked(gridX, gridY)) {
+            return true;
+        }
+
+        // Check object collision
+        for (const obj of this.objects) {
+            if (obj.isAt(gridX, gridY)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
