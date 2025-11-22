@@ -54,19 +54,38 @@ export class Game {
 
         const objects: GameObject[] = [];
 
-        // Add a boulder
-        const boulder = new Boulder(5, 5, this.app.renderer);
-        objects.push(boulder);
-        objectLayer.addChild(boulder);
+        // Randomly place a 10x10 patch of soil
+        // Ensure it doesn't overlap with border rocks (x/y range: 1 to MAP_WIDTH - 1)
+        // Patch size is 10, so max start index is MAP_WIDTH - 1 - 10 = MAP_WIDTH - 11
+        // Range: 1 to MAP_WIDTH - 11
 
-        // Add a patch of soil
-        for (let x = 7; x < 10; x++) {
-            for (let y = 5; y < 8; y++) {
+        const maxStart = TileMap.MAP_WIDTH - 11;
+        const startX = Math.floor(Math.random() * (maxStart - 1 + 1)) + 1;
+        const startY = Math.floor(Math.random() * (maxStart - 1 + 1)) + 1;
+
+        for (let x = startX; x < startX + 10; x++) {
+            for (let y = startY; y < startY + 10; y++) {
                 const soil = new Soil(x, y, this.app.renderer);
                 objects.push(soil);
                 objectLayer.addChild(soil);
             }
         }
+
+        // Add some boulders, some might be on top of soil
+        for (let i = 0; i < 5; i++) {
+            // Random position within the map (excluding borders)
+            const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
+            const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
+
+            const boulder = new Boulder(x, y, this.app.renderer);
+            objects.push(boulder);
+            objectLayer.addChild(boulder);
+        }
+
+        // Explicitly place a boulder on the soil patch for testing
+        const testBoulder = new Boulder(startX + 5, startY + 5, this.app.renderer);
+        objects.push(testBoulder);
+        objectLayer.addChild(testBoulder);
 
         this.player = new Player(playerTexture, this.inputManager, this.tileMap, objects);
         this.player.x = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;

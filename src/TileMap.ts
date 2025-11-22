@@ -16,8 +16,8 @@ export class TileMap extends Container {
         for (let y = 0; y < TileMap.MAP_HEIGHT; y++) {
             const row: number[] = [];
             for (let x = 0; x < TileMap.MAP_WIDTH; x++) {
-                // 10% chance of a rock
-                if (Math.random() < 0.1) {
+                // Place rocks on the borders
+                if (x === 0 || x === TileMap.MAP_WIDTH - 1 || y === 0 || y === TileMap.MAP_HEIGHT - 1) {
                     row.push(1); // Rock
                 } else {
                     row.push(0); // Grass

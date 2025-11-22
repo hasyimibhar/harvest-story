@@ -73,15 +73,15 @@ export class Player extends Sprite {
                 break;
         }
 
-        for (let i = 0; i < this.objects.length; i++) {
+        // Iterate in reverse order to interact with top-most objects first
+        for (let i = this.objects.length - 1; i >= 0; i--) {
             const obj = this.objects[i];
             if (obj.isAt(targetX, targetY)) {
                 const destroyed = obj.interact();
                 if (destroyed) {
                     this.objects.splice(i, 1);
-                    i--;
                 }
-                break; // Only interact with one object at a time
+                break; // Only interact with one object at a time (the top one)
             }
         }
     }
