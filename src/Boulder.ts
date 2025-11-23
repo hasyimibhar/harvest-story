@@ -22,10 +22,24 @@ export class Boulder extends GameObject {
     }
 
     public interact(): boolean {
-        this.health--;
-        if (this.health <= 0) {
-            this.destroy();
-            return true;
+        // Interaction does nothing now
+        return false;
+    }
+
+    public onToolUse(toolType: string): boolean {
+        if (toolType === "Hammer") {
+            this.health--;
+            if (this.health <= 0) {
+                return true; // Destroyed
+            }
+
+            // Visual feedback (flash red)
+            this.children[0].tint = 0xFF0000;
+            setTimeout(() => {
+                if (this.children.length > 0) {
+                    this.children[0].tint = 0xFFFFFF;
+                }
+            }, 100);
         }
         return false;
     }

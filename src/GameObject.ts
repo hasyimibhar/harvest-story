@@ -37,4 +37,8 @@ export class GameObject extends Container {
     public onPlace(): boolean {
         return true;
     }
+
+    public onToolUse(toolType: string): boolean {
+        return false;
+    }
 }

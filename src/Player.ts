@@ -10,6 +10,10 @@ export class Player extends Container {
 
     private heldObject: GameObject | null = null;
 
+    // Tool system
+    public toolBag: string[] = ["Hammer", "None", "None", "None", "None"];
+    public selectedToolIndex: number = 0;
+
     constructor(
         renderer: Renderer,
         private inputManager: InputManager,
@@ -38,20 +42,20 @@ export class Player extends Container {
         let dx = 0;
         let dy = 0;
 
-        if (this.inputManager.isKeyDown("ArrowUp") || this.inputManager.isKeyDown("KeyW")) {
+        if (this.inputManager.isKeyDown("ArrowUp")) {
             dy -= this.speed * delta;
             this.direction = "up";
         }
-        else if (this.inputManager.isKeyDown("ArrowDown") || this.inputManager.isKeyDown("KeyS")) {
+        else if (this.inputManager.isKeyDown("ArrowDown")) {
             dy += this.speed * delta;
             this.direction = "down";
         }
 
-        if (this.inputManager.isKeyDown("ArrowLeft") || this.inputManager.isKeyDown("KeyA")) {
+        if (this.inputManager.isKeyDown("ArrowLeft")) {
             dx -= this.speed * delta;
             this.direction = "left";
         }
-        else if (this.inputManager.isKeyDown("ArrowRight") || this.inputManager.isKeyDown("KeyD")) {
+        else if (this.inputManager.isKeyDown("ArrowRight")) {
             dx += this.speed * delta;
             this.direction = "right";
         }
@@ -64,7 +68,66 @@ export class Player extends Container {
             this.interact();
         }
 
+        // Tool controls
+        if (this.inputManager.isJustPressed("KeyQ")) {
+            this.cycleTool(-1);
+        }
+        if (this.inputManager.isJustPressed("KeyW")) {
+            this.cycleTool(1);
+        }
+        if (this.inputManager.isJustPressed("KeyA")) {
+            this.useTool();
+        }
+
         this.updateHighlight();
+    }
+
+    private cycleTool(direction: number): void {
+        this.selectedToolIndex += direction;
+        if (this.selectedToolIndex < 0) {
+            this.selectedToolIndex = this.toolBag.length - 1;
+        } else if (this.selectedToolIndex >= this.toolBag.length) {
+            this.selectedToolIndex = 0;
+        }
+    }
+
+    public getSelectedTool(): string {
+        return this.toolBag[this.selectedToolIndex];
+    }
+
+    private useTool(): void {
+        const currentTool = this.getSelectedTool();
+        if (currentTool === "None") return;
+
+        const { targetX, targetY } = this.getTargetTile();
+
+        // Iterate in reverse order
+        for (let i = this.objects.length - 1; i >= 0; i--) {
+            const obj = this.objects[i];
+            if (obj.isAt(targetX, targetY)) {
+                const destroyed = obj.onToolUse(currentTool);
+                if (destroyed) {
+                    this.objects.splice(i, 1);
+                    this.onRemoveObject(obj);
+                }
+                break; // Only hit top object
+            }
+        }
+    }
+
+    private getTargetTile(): { targetX: number, targetY: number } {
+        const gridX = Math.floor(this.x / TileMap.TILE_SIZE);
+        const gridY = Math.floor(this.y / TileMap.TILE_SIZE);
+        let targetX = gridX;
+        let targetY = gridY;
+
+        switch (this.direction) {
+            case "up": targetY -= 1; break;
+            case "down": targetY += 1; break;
+            case "left": targetX -= 1; break;
+            case "right": targetX += 1; break;
+        }
+        return { targetX, targetY };
     }
 
     private interact(): void {

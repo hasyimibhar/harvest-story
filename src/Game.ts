@@ -16,6 +16,7 @@ export class Game {
     private currentDay: number = 1;
     private fadeOverlay: Graphics | undefined;
     private dayText: Text | undefined;
+    private toolText: Text | undefined;
     private isTransitioning: boolean = false;
 
     constructor() {
@@ -170,11 +171,28 @@ export class Game {
         this.dayText.y = this.app.screen.height - 40;
         this.app.stage.addChild(this.dayText);
 
+        // Create tool text
+        this.toolText = new Text({
+            text: `Tool: ${this.player.getSelectedTool()}`,
+            style: {
+                fontFamily: 'Arial',
+                fontSize: 24,
+                fill: 0xFFFFFF,
+            }
+        });
+        this.toolText.x = this.app.screen.width - 250;
+        this.toolText.y = this.app.screen.height - 40;
+        this.app.stage.addChild(this.toolText);
+
         this.app.ticker.add((ticker) => {
             // Only update game logic when not transitioning
             if (!this.isTransitioning) {
                 if (this.player) {
                     this.player.update(ticker);
+                    // Update tool UI
+                    if (this.toolText) {
+                        this.toolText.text = `Tool: ${this.player.getSelectedTool()}`;
+                    }
                 }
 
                 // Check for P key to advance day

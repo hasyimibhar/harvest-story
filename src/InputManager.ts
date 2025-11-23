@@ -6,7 +6,7 @@ export class InputManager {
         window.addEventListener("keydown", (e) => {
             this.keys[e.code] = true;
             // Only prevent default for game keys
-            const gameKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyX", "KeyP"];
+            const gameKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyX", "KeyP", "KeyQ", "KeyW", "KeyA"];
             if (gameKeys.includes(e.code)) {
                 e.preventDefault();
             }
