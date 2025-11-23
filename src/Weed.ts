@@ -27,7 +27,7 @@ export class Weed extends GameObject {
 
   public onPlace(): boolean {
     // Destroy on place
-    this.destroy();
+    this.kill();
     return false;
   }
 }

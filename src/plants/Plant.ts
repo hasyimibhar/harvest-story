@@ -71,7 +71,8 @@ export abstract class Plant extends GameObject {
   }
 
   public onHarvest(): GameObject | null {
-    // Return the produce - caller will handle destroying the plant
+    // By default, plant is only harvestable once
+    this.kill();
     return this.createProduce(this.renderer);
   }
 

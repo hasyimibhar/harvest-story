@@ -201,9 +201,6 @@ export class Player extends Container {
 
         const produce = obj.interact();
         if (produce) {
-          // Harvested produce - remove plant from world first, then destroy it
-          this.world.removeObject(obj);
-          obj.destroy();
           // Pick up the produce
           this.heldObject = produce;
           this.addChild(produce);

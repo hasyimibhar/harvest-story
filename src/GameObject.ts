@@ -3,6 +3,7 @@ import { TileMap } from "./TileMap";
 
 export class GameObject extends Container {
   public isSolid: boolean = true;
+  protected _isKilled: boolean = false;
 
   constructor(
     public gridX: number,
@@ -41,5 +42,13 @@ export class GameObject extends Container {
 
   public onDayPass(): boolean {
     return true;
+  }
+
+  get isKilled(): boolean {
+    return this._isKilled;
+  }
+
+  public kill(): void {
+    this._isKilled = true;
   }
 }

@@ -1,11 +1,13 @@
-import { Container } from "pixi.js";
+import { Container, Ticker } from "pixi.js";
 import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
 import { Soil } from "./Soil";
+import { Player } from "./Player";
 
 export class World extends Container {
   private grid: GameObject[][][];
   private objects: GameObject[] = [];
+  private player: Player | undefined;
 
   // Layers
   private soilLayer: Container;
@@ -27,6 +29,21 @@ export class World extends Container {
       for (let y = 0; y < TileMap.MAP_HEIGHT; y++) {
         this.grid[x][y] = [];
       }
+    }
+  }
+
+  public update(ticker: Ticker) {
+    if (this.player) {
+      this.player.update(ticker);
+    }
+
+    this.sortObjects();
+
+    // Clean up killed objects at the end of the update
+    const killedObjects = this.objects.filter((obj) => obj.isKilled);
+    for (const obj of killedObjects) {
+      this.removeObject(obj);
+      obj.destroy();
     }
   }
 
@@ -137,8 +154,9 @@ export class World extends Container {
     this.objectLayer.children.sort((a, b) => a.y - b.y);
   }
 
-  public addToObjectLayer(obj: Container): void {
-    this.objectLayer.addChild(obj);
+  public setPlayer(player: Player): void {
+    this.player = player;
+    this.objectLayer.addChild(this.player);
   }
 
   public addChildToMap(child: Container): void {

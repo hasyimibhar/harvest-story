@@ -28,7 +28,7 @@ export class Turnip extends GameObject {
 
   public onPlace(): boolean {
     // Destroy on place (like Weed)
-    this.destroy();
+    this.kill();
     return false;
   }
 }

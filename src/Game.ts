@@ -123,7 +123,7 @@ export class Game {
     this.player.setHighlightGraphics(highlightGraphics);
 
     // Add player to objectLayer for proper depth sorting
-    this.world.addToObjectLayer(this.player);
+    this.world.setPlayer(this.player);
 
     // Create fade overlay (initially transparent)
     this.fadeOverlay = new Graphics();
@@ -161,14 +161,6 @@ export class Game {
     this.app.ticker.add((ticker) => {
       // Only update game logic when not transitioning
       if (!this.isTransitioning) {
-        if (this.player) {
-          this.player.update(ticker);
-          // Update tool UI
-          if (this.toolText) {
-            this.toolText.text = `Tool: ${this.player.getSelectedTool()?.name || "None"}`;
-          }
-        }
-
         // Check for P key to advance day
         if (this.inputManager.isJustPressed("KeyP")) {
           console.log("P key pressed! isTransitioning:", this.isTransitioning);
@@ -176,9 +168,14 @@ export class Game {
           this.advanceDay();
         }
 
-        // Sort objects by Y position
         if (this.world) {
-          this.world.sortObjects();
+          this.world.update(ticker);
+        }
+
+        if (this.player) {
+          if (this.toolText) {
+            this.toolText.text = `Tool: ${this.player.getSelectedTool()?.name || "None"}`;
+          }
         }
       }
 
