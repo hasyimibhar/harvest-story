@@ -26,4 +26,11 @@ export class Weed extends GameObject {
         this.destroy();
         return false;
     }
+
+    public onToolUse(toolType: string): boolean {
+        if (toolType === "Sickle") {
+            return true; // Destroyed
+        }
+        return false;
+    }
 }

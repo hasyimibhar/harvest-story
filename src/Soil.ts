@@ -4,6 +4,7 @@ import { TileMap } from "./TileMap";
 
 export class Soil extends GameObject {
     private isTilled: boolean = false;
+    private isWatered: boolean = false;
     private sprite: Sprite;
     private renderer: Renderer;
 
@@ -24,10 +25,23 @@ export class Soil extends GameObject {
     }
 
     public interact(): boolean {
-        if (!this.isTilled) {
-            this.isTilled = true;
-            this.sprite.texture = this.createTexture(0x8B4513); // Dark brown
-            return false; // Don't destroy
+        // Interaction does nothing now
+        return false;
+    }
+
+    public onToolUse(toolType: string): boolean {
+        if (toolType === "Hoe") {
+            if (!this.isTilled) {
+                this.isTilled = true;
+                this.sprite.texture = this.createTexture(0x8B4513); // Dark brown
+                return false; // Don't destroy
+            }
+        } else if (toolType === "Watering Can") {
+            if (this.isTilled && !this.isWatered) {
+                this.isWatered = true;
+                this.sprite.texture = this.createTexture(0x5D2906); // Darker brown (Watered)
+                return false;
+            }
         }
         return false;
     }

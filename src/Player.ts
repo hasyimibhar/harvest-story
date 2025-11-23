@@ -11,7 +11,7 @@ export class Player extends Container {
     private heldObject: GameObject | null = null;
 
     // Tool system
-    public toolBag: string[] = ["Hammer", "None", "None", "None", "None"];
+    public toolBag: string[] = ["Hammer", "Hoe", "Sickle", "Watering Can", "None"];
     public selectedToolIndex: number = 0;
 
     constructor(
