@@ -10,12 +10,15 @@ import { WateringCan } from "./tools/WateringCan";
 import { TurnipSeed } from "./tools/TurnipSeed";
 import { World } from "./World";
 
+import { Rucksack } from "./Rucksack";
+
 export class Player extends Container {
   private speed = 2;
   private direction: number = 2; // 0: Up, 1: Right, 2: Down, 3: Left
   private sprite: Sprite;
 
   private heldObject: GameObject | null = null;
+  public rucksack: Rucksack = new Rucksack();
 
   // Tool system
   public toolBag: (Tool | null)[] = [
@@ -75,6 +78,29 @@ export class Player extends Container {
 
     if (this.inputManager.isJustPressed("KeyX")) {
       this.interact();
+    }
+
+    // Rucksack controls
+    if (this.inputManager.isJustPressed("KeyZ")) {
+      if (this.heldObject) {
+        // Store held item
+        if (this.rucksack.add(this.heldObject)) {
+          this.removeChild(this.heldObject);
+          this.heldObject = null;
+          console.log("Item stored in rucksack");
+        } else {
+          console.log("Rucksack is full");
+        }
+      } else {
+        // Retrieve item
+        const item = this.rucksack.remove();
+        if (item) {
+          this.pickupObject(item);
+          console.log("Item retrieved from rucksack");
+        } else {
+          console.log("Rucksack is empty");
+        }
+      }
     }
 
     // Tool controls
