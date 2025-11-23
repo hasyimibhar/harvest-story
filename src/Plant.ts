@@ -6,12 +6,10 @@ import { TileMap } from "./TileMap";
 import { Soil } from "./Soil";
 
 export class Plant extends GameObject {
-  private soil: Soil;
   private sprite: Sprite;
 
   constructor(_soil: Soil, renderer: Renderer) {
     super(_soil.gridX, _soil.gridY, 1, 1);
-    this.soil = _soil;
     this.isSolid = false;
     this.isPickupable = false; // Plants can't be picked up (yet)
 

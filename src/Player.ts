@@ -8,6 +8,7 @@ import { Hoe } from "./tools/Hoe";
 import { Sickle } from "./tools/Sickle";
 import { WateringCan } from "./tools/WateringCan";
 import { TurnipSeed } from "./tools/TurnipSeed";
+import { World } from "./World";
 
 export class Player extends Container {
   private speed = 2;
@@ -30,9 +31,7 @@ export class Player extends Container {
     private renderer: Renderer,
     private inputManager: InputManager,
     private tileMap: TileMap,
-    private objects: GameObject[],
-    private onAddObject: (obj: GameObject) => void,
-    private onRemoveObject: (obj: GameObject) => void,
+    private world: World,
   ) {
     super();
 
@@ -80,10 +79,10 @@ export class Player extends Container {
 
     // Tool controls
     if (this.inputManager.isJustPressed("KeyQ")) {
-      this.cycleTool();
+      this.cycleTool(-1); // Cycle backward
     }
     if (this.inputManager.isJustPressed("KeyW")) {
-      this.cycleTool(); // Assuming W also cycles forward for now, or Q cycles backward
+      this.cycleTool(1); // Cycle forward
     }
     if (this.inputManager.isJustPressed("KeyA")) {
       this.useTool();
@@ -92,8 +91,10 @@ export class Player extends Container {
     this.updateHighlight();
   }
 
-  public cycleTool(): void {
-    this.selectedToolIndex = (this.selectedToolIndex + 1) % this.toolBag.length;
+  public cycleTool(direction: number = 1): void {
+    this.selectedToolIndex =
+      (this.selectedToolIndex + direction + this.toolBag.length) %
+      this.toolBag.length;
     console.log(`Selected tool: ${this.getSelectedTool().name}`);
   }
 
@@ -136,25 +137,30 @@ export class Player extends Container {
 
   // Public methods for Tools to interact with the world
   public getObjects(): GameObject[] {
-    return this.objects;
+    // Deprecated or redirect to world?
+    // Tools might need to iterate all objects?
+    // Better to expose world to tools?
+    // For now, let's return empty or throw, or expose world.objects if needed.
+    // But we want to encourage using getObjectsAt.
+    // Let's return world.objects if we make it public, or just remove this method and update Tools?
+    // Tools use player.getObjects().
+    // I should update Tools to use player.getWorld().
+    // But for now, to minimize breakage, let's try to keep API or update Tools.
+    // The plan says "Refactor Tools to use World via Player".
+    // So Player should expose getWorld().
+    return []; // Placeholder, tools should use getWorld()
+  }
+
+  public getWorld(): World {
+    return this.world;
   }
 
   public addObject(obj: GameObject): void {
-    if (this.parent) {
-      this.parent.addChild(obj);
-      this.objects.push(obj);
-      this.parent.children.sort((a, b) => a.y - b.y);
-    }
+    this.world.addObject(obj);
   }
 
   public removeObject(obj: GameObject): void {
-    if (this.parent) {
-      this.parent.removeChild(obj);
-      const index = this.objects.indexOf(obj);
-      if (index > -1) {
-        this.objects.splice(index, 1);
-      }
-    }
+    this.world.removeObject(obj);
   }
 
   public getRenderer(): Renderer {
@@ -196,33 +202,31 @@ export class Player extends Container {
         // Handle placement logic (e.g., Weed destroys itself)
         if (this.heldObject.onPlace()) {
           // Add back to game world if onPlace returns true
-          this.onAddObject(this.heldObject);
+          this.world.addObject(this.heldObject);
         }
 
         this.heldObject = null;
       }
     } else {
       // Try to interact or pickup
-      // Iterate in reverse order to interact with top-most objects first
-      for (let i = this.objects.length - 1; i >= 0; i--) {
-        const obj = this.objects[i];
-        if (obj.isAt(targetX, targetY)) {
-          if (obj.isPickupable) {
-            // Pickup object
-            this.onRemoveObject(obj);
-            this.heldObject = obj;
-            this.addChild(obj);
-            obj.x = 0;
-            obj.y = -TileMap.TILE_SIZE / 2; // Position above head
-            return;
-          }
-
-          const destroyed = obj.interact();
-          if (destroyed) {
-            this.objects.splice(i, 1);
-          }
-          break; // Only interact with one object at a time (the top one)
+      // Iterate to interact with top-most objects first
+      const objects = this.world.getObjectsAt(targetX, targetY);
+      for (const obj of objects) {
+        if (obj.isPickupable) {
+          // Pickup object
+          this.world.removeObject(obj);
+          this.heldObject = obj;
+          this.addChild(obj);
+          obj.x = 0;
+          obj.y = -TileMap.TILE_SIZE / 2; // Position above head
+          return;
         }
+
+        const destroyed = obj.interact();
+        if (destroyed) {
+          this.world.removeObject(obj);
+        }
+        break; // Only interact with one object at a time (the top one)
       }
     }
   }
@@ -243,21 +247,20 @@ export class Player extends Container {
     }
 
     // Check for other objects blocking
-    for (const other of this.objects) {
-      if (other.isAt(x, y)) {
-        // Special case: Fence can be placed on Soil
-        // If 'other' is Soil, it's okay IF the object allows it.
-        // But Soil is an object.
-        // We need a way to check if 'other' is Soil.
-        // For now, let's assume if there's ANY object, we can't place, UNLESS it's Soil.
-        // But we don't have instanceof check easily without importing Soil.
-        // Let's use isSolid. Soil is NOT solid.
-        if (other.isSolid) {
-          return false;
-        }
-        // If it's not solid (like Soil), we can place on it?
-        // Yes, user said "For fence, it can only be placed down on grass or soil."
+    const objects = this.world.getObjectsAt(x, y);
+    for (const other of objects) {
+      // Special case: Fence can be placed on Soil
+      // If 'other' is Soil, it's okay IF the object allows it.
+      // But Soil is an object.
+      // We need a way to check if 'other' is Soil.
+      // For now, let's assume if there's ANY object, we can't place, UNLESS it's Soil.
+      // But we don't have instanceof check easily without importing Soil.
+      // Let's use isSolid. Soil is NOT solid.
+      if (other.isSolid) {
+        return false;
       }
+      // If it's not solid (like Soil), we can place on it?
+      // Yes, user said "For fence, it can only be placed down on grass or soil."
     }
 
     return true;
@@ -369,8 +372,9 @@ export class Player extends Container {
     }
 
     // Check object collision
-    for (const obj of this.objects) {
-      if (obj.isSolid && obj.isAt(gridX, gridY)) {
+    const objects = this.world.getObjectsAt(gridX, gridY);
+    for (const obj of objects) {
+      if (obj.isSolid) {
         return true;
       }
     }

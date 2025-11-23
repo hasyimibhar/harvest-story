@@ -1,12 +1,12 @@
-import { Application, Graphics, Container, Text } from "pixi.js";
+import { Application, Graphics, Text } from "pixi.js";
 import { TileMap } from "./TileMap";
 import { Player } from "./Player";
 import { InputManager } from "./InputManager";
-import { GameObject } from "./GameObject";
 import { Boulder } from "./Boulder";
 import { Soil } from "./Soil";
 import { Fence } from "./Fence";
 import { Weed } from "./Weed";
+import { World } from "./World";
 
 export class Game {
   private app: Application;
@@ -36,7 +36,8 @@ export class Game {
     console.log("Creating scene...");
 
     // Create a world container to center everything
-    const world = new Container();
+    // Create a world container to center everything
+    const world = new World();
     this.app.stage.addChild(world);
 
     // Center the world container
@@ -56,17 +57,9 @@ export class Game {
     const rockTexture = this.app.renderer.generateTexture(rockGraphics);
 
     this.tileMap = new TileMap(grassTexture, rockTexture);
-    world.addChild(this.tileMap);
+    world.addChildToMap(this.tileMap);
 
-    // Soil Layer (rendered first, below everything)
-    const soilLayer = new Container();
-    world.addChild(soilLayer);
-
-    // Object Layer
-    const objectLayer = new Container();
-    world.addChild(objectLayer);
-
-    const objects: GameObject[] = [];
+    // Soil Layer and Object Layer are managed by World now
 
     // Randomly place a 10x10 patch of soil
     // Ensure it doesn't overlap with border rocks (x/y range: 1 to MAP_WIDTH - 1)
@@ -80,8 +73,7 @@ export class Game {
     for (let x = startX; x < startX + 10; x++) {
       for (let y = startY; y < startY + 10; y++) {
         const soil = new Soil(x, y, this.app.renderer);
-        objects.push(soil);
-        soilLayer.addChild(soil); // Add to soilLayer instead of objectLayer
+        world.addObject(soil);
       }
     }
 
@@ -92,22 +84,19 @@ export class Game {
       const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
 
       const boulder = new Boulder(x, y, this.app.renderer);
-      objects.push(boulder);
-      objectLayer.addChild(boulder);
+      world.addObject(boulder);
     }
 
     // Explicitly place a boulder on the soil patch for testing
     const testBoulder = new Boulder(startX + 5, startY + 5, this.app.renderer);
-    objects.push(testBoulder);
-    objectLayer.addChild(testBoulder);
+    world.addObject(testBoulder);
 
     // Add some fences
     for (let i = 0; i < 5; i++) {
       const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
       const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
       const fence = new Fence(x, y, this.app.renderer);
-      objects.push(fence);
-      objectLayer.addChild(fence);
+      world.addObject(fence);
     }
 
     // Add some weeds
@@ -115,36 +104,14 @@ export class Game {
       const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
       const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
       const weed = new Weed(x, y, this.app.renderer);
-      objects.push(weed);
-      objectLayer.addChild(weed);
+      world.addObject(weed);
     }
 
     this.player = new Player(
       this.app.renderer,
       this.inputManager,
       this.tileMap,
-      objects,
-      (obj: GameObject) => {
-        objects.push(obj);
-        // Add soil to soilLayer, everything else to objectLayer
-        if (obj instanceof Soil) {
-          soilLayer.addChild(obj);
-        } else {
-          objectLayer.addChild(obj);
-        }
-      },
-      (obj: GameObject) => {
-        const index = objects.indexOf(obj);
-        if (index !== -1) {
-          objects.splice(index, 1);
-        }
-        // Remove from appropriate layer
-        if (obj instanceof Soil) {
-          soilLayer.removeChild(obj);
-        } else {
-          objectLayer.removeChild(obj);
-        }
-      },
+      world,
     );
     this.player.x = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
     this.player.y = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
@@ -155,7 +122,7 @@ export class Game {
     this.player.setHighlightGraphics(highlightGraphics);
 
     // Add player to objectLayer for proper depth sorting
-    objectLayer.addChild(this.player);
+    world.addToObjectLayer(this.player);
 
     // Create fade overlay (initially transparent)
     this.fadeOverlay = new Graphics();
@@ -208,8 +175,8 @@ export class Game {
           this.advanceDay();
         }
 
-        // Sort objectLayer children by y-coordinate for proper depth rendering
-        objectLayer.children.sort((a, b) => a.y - b.y);
+        // Sort objects by Y position
+        world.sortObjects();
       }
 
       this.inputManager.update();
