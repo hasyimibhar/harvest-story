@@ -3,15 +3,18 @@ import { GameObject } from "../GameObject";
 import { TileMap } from "../TileMap";
 import { Soil } from "../Soil";
 
-export class Plant extends GameObject {
+export abstract class Plant extends GameObject {
   private sprite: Sprite;
   protected age: number = 0;
   protected maturityAge: number = 1; // Default maturity age
   protected soil: Soil;
+  // Store renderer for harvest
+  protected renderer: Renderer;
 
   constructor(soil: Soil, renderer: Renderer) {
     super(soil.gridX, soil.gridY, 1, 1);
     this.soil = soil;
+    this.renderer = renderer;
     this.isSolid = false;
     this.isPickupable = false; // Plants can't be picked up (yet)
 
@@ -55,6 +58,21 @@ export class Plant extends GameObject {
 
   get isSeed(): boolean {
     return true;
+  }
+
+  // Abstract method for subclasses to define their produce type
+  protected abstract createProduce(renderer: Renderer): GameObject | null;
+
+  public interact(): GameObject | null {
+    if (this.isMature()) {
+      return this.onHarvest();
+    }
+    return null;
+  }
+
+  public onHarvest(): GameObject | null {
+    // Return the produce - caller will handle destroying the plant
+    return this.createProduce(this.renderer);
   }
 
   public onDayPass(): boolean {

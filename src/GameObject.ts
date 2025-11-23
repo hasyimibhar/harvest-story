@@ -24,8 +24,8 @@ export class GameObject extends Container {
     );
   }
 
-  public interact(): boolean {
-    return false;
+  public interact(): GameObject | null {
+    return null;
   }
 
   public isPickupable: boolean = false;

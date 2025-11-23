@@ -2,13 +2,12 @@ import { Graphics, Renderer, Sprite } from "pixi.js";
 import { Plant } from "./Plant";
 import { Soil } from "../Soil";
 import { TileMap } from "../TileMap";
+import { GameObject } from "../GameObject";
+import { Turnip } from "../produces/Turnip";
 
 export class TurnipPlant extends Plant {
-  private renderer: Renderer;
-
   constructor(soil: Soil, renderer: Renderer) {
     super(soil, renderer);
-    this.renderer = renderer;
     this.maturityAge = 4;
     this.updateTexture();
   }
@@ -27,6 +26,11 @@ export class TurnipPlant extends Plant {
 
   get isSeed(): boolean {
     return this.age < 2;
+  }
+
+  protected createProduce(renderer: Renderer): GameObject | null {
+    // Create a Turnip produce at the same grid position
+    return new Turnip(this.gridX, this.gridY, renderer);
   }
 
   private updateTexture(): void {

@@ -24,9 +24,9 @@ export class Soil extends GameObject {
     return this.renderer.generateTexture(graphics);
   }
 
-  public interact(): boolean {
+  public interact(): GameObject | null {
     // Interaction does nothing now
-    return false;
+    return null;
   }
 
   public till(): boolean {

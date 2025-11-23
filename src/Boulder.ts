@@ -21,9 +21,9 @@ export class Boulder extends GameObject {
     this.addChild(sprite);
   }
 
-  public interact(): boolean {
+  public interact(): GameObject | null {
     // Interaction does nothing now
-    return false;
+    return null;
   }
 
   public takeDamage(): boolean {

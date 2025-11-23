@@ -199,9 +199,17 @@ export class Player extends Container {
           return;
         }
 
-        const destroyed = obj.interact();
-        if (destroyed) {
+        const produce = obj.interact();
+        if (produce) {
+          // Harvested produce - remove plant from world first, then destroy it
           this.world.removeObject(obj);
+          obj.destroy();
+          // Pick up the produce
+          this.heldObject = produce;
+          this.addChild(produce);
+          produce.x = 0;
+          produce.y = -TileMap.TILE_SIZE / 2; // Position above head
+          return;
         }
         break; // Only interact with one object at a time (the top one)
       }
