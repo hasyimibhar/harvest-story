@@ -9,11 +9,14 @@ export class Boulder extends GameObject {
         super(gridX, gridY, 1, 1);
 
         const graphics = new Graphics()
-            .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
+            .rect(0, 0, TileMap.TILE_SIZE - 5, TileMap.TILE_SIZE - 5)
             .fill(0x555555); // Dark grey for boulder
 
         const texture = renderer.generateTexture(graphics);
         const sprite = new Sprite(texture);
+        sprite.anchor.set(0.5);
+        sprite.x = TileMap.TILE_SIZE / 2;
+        sprite.y = TileMap.TILE_SIZE / 4;
 
         this.addChild(sprite);
     }

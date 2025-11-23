@@ -1,4 +1,4 @@
-import { Application, Graphics, Container } from "pixi.js";
+import { Application, Graphics, Container, Text } from "pixi.js";
 import { TileMap } from "./TileMap";
 import { Player } from "./Player";
 import { InputManager } from "./InputManager";
@@ -13,6 +13,10 @@ export class Game {
     private inputManager: InputManager;
     private tileMap: TileMap | undefined;
     private player: Player | undefined;
+    private currentDay: number = 1;
+    private fadeOverlay: Graphics | undefined;
+    private dayText: Text | undefined;
+    private isTransitioning: boolean = false;
 
     constructor() {
         this.app = new Application();
@@ -43,9 +47,6 @@ export class Game {
 
         const rockGraphics = new Graphics().rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE).fill(0x808080);
         const rockTexture = this.app.renderer.generateTexture(rockGraphics);
-
-        const playerGraphics = new Graphics().rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE).fill(0xFF0000);
-        const playerTexture = this.app.renderer.generateTexture(playerGraphics);
 
         this.tileMap = new TileMap(grassTexture, rockTexture);
         world.addChild(this.tileMap);
@@ -112,7 +113,7 @@ export class Game {
         }
 
         this.player = new Player(
-            playerTexture,
+            this.app.renderer,
             this.inputManager,
             this.tileMap,
             objects,
@@ -149,14 +150,92 @@ export class Game {
         // Add player to objectLayer for proper depth sorting
         objectLayer.addChild(this.player);
 
-        this.app.ticker.add((ticker) => {
-            if (this.player) {
-                this.player.update(ticker);
-            }
-            this.inputManager.update();
+        // Create fade overlay (initially transparent)
+        this.fadeOverlay = new Graphics();
+        this.fadeOverlay.rect(0, 0, this.app.screen.width, this.app.screen.height);
+        this.fadeOverlay.fill(0x000000);
+        this.fadeOverlay.alpha = 0;
+        this.app.stage.addChild(this.fadeOverlay);
 
-            // Sort objectLayer children by y-coordinate for proper depth rendering
-            objectLayer.children.sort((a, b) => a.y - b.y);
+        // Create day counter text
+        this.dayText = new Text({
+            text: `Day ${this.currentDay}`,
+            style: {
+                fontFamily: 'Arial',
+                fontSize: 24,
+                fill: 0xFFFFFF,
+            }
         });
+        this.dayText.x = 10;
+        this.dayText.y = this.app.screen.height - 40;
+        this.app.stage.addChild(this.dayText);
+
+        this.app.ticker.add((ticker) => {
+            // Only update game logic when not transitioning
+            if (!this.isTransitioning) {
+                if (this.player) {
+                    this.player.update(ticker);
+                }
+
+                // Check for P key to advance day
+                if (this.inputManager.isJustPressed("KeyP")) {
+                    console.log("P key pressed! isTransitioning:", this.isTransitioning);
+                    console.log("Advancing day...");
+                    this.advanceDay();
+                }
+
+                // Sort objectLayer children by y-coordinate for proper depth rendering
+                objectLayer.children.sort((a, b) => a.y - b.y);
+            }
+
+            this.inputManager.update();
+        });
+    }
+
+    private async advanceDay(): Promise<void> {
+        console.log("advanceDay called, currentDay:", this.currentDay);
+        this.isTransitioning = true;
+
+        // Fade out (0.5s)
+        await this.animateFade(0, 1, 500);
+
+        // Pause (1s)
+        await this.wait(1000);
+
+        // Increment day
+        this.currentDay++;
+        if (this.dayText) {
+            this.dayText.text = `Day ${this.currentDay}`;
+        }
+
+        // Fade in (0.5s)
+        await this.animateFade(1, 0, 500);
+
+        this.isTransitioning = false;
+    }
+
+    private animateFade(fromAlpha: number, toAlpha: number, durationMs: number): Promise<void> {
+        return new Promise((resolve) => {
+            const startTime = Date.now();
+            const animate = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / durationMs, 1);
+
+                if (this.fadeOverlay) {
+                    this.fadeOverlay.alpha = fromAlpha + (toAlpha - fromAlpha) * progress;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    resolve();
+                }
+            };
+            animate();
+        });
+    }
+
+    private wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }

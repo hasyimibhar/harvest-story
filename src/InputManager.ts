@@ -5,6 +5,11 @@ export class InputManager {
     constructor() {
         window.addEventListener("keydown", (e) => {
             this.keys[e.code] = true;
+            // Only prevent default for game keys
+            const gameKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyX", "KeyP"];
+            if (gameKeys.includes(e.code)) {
+                e.preventDefault();
+            }
         });
 
         window.addEventListener("keyup", (e) => {

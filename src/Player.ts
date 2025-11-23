@@ -1,24 +1,35 @@
-import { Sprite, Texture, Ticker, Graphics } from "pixi.js";
+import { Container, Sprite, Ticker, Graphics, Renderer } from "pixi.js";
 import { InputManager } from "./InputManager";
 import { TileMap } from "./TileMap";
 import { GameObject } from "./GameObject";
 
-export class Player extends Sprite {
+export class Player extends Container {
     private speed = 2;
     private direction: "up" | "down" | "left" | "right" = "down";
+    private sprite: Sprite;
 
     private heldObject: GameObject | null = null;
 
     constructor(
-        texture: Texture,
+        renderer: Renderer,
         private inputManager: InputManager,
         private tileMap: TileMap,
         private objects: GameObject[],
         private onAddObject: (obj: GameObject) => void,
         private onRemoveObject: (obj: GameObject) => void
     ) {
-        super(texture);
-        this.anchor.set(0.5);
+        super();
+
+        const graphics = new Graphics()
+            .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
+            .fill(0xFF0000); // Red player
+
+        const texture = renderer.generateTexture(graphics);
+
+        this.sprite = new Sprite(texture);
+        this.sprite.anchor.set(0.5);
+        this.addChild(this.sprite);
+
         // this.scale.set(0.8); // Make player slightly smaller than tile
     }
 
