@@ -53,6 +53,10 @@ export class Plant extends GameObject {
     return this.soil.isWatered;
   }
 
+  get isSeed(): boolean {
+    return true;
+  }
+
   public onDayPass(): boolean {
     if (this.isWatered) {
       return this.grow();

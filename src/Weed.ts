@@ -30,8 +30,4 @@ export class Weed extends GameObject {
     this.destroy();
     return false;
   }
-
-  public cut(): boolean {
-    return true; // Always destroyed when cut
-  }
 }

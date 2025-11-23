@@ -1,6 +1,7 @@
 import { Tool } from "./Tool";
 import { Player } from "../Player";
 import { Soil } from "../Soil";
+import { Plant } from "../plants/Plant";
 
 export class Hoe extends Tool {
   constructor() {
@@ -17,6 +18,13 @@ export class Hoe extends Tool {
       if (obj instanceof Soil) {
         toolUsed = obj.till();
         break; // Hoe doesn't pass through
+      }
+
+      // Hoe can be used to unseed a soil
+      if (obj instanceof Plant && obj.isSeed) {
+        player.getWorld().removeObject(obj);
+        toolUsed = true;
+        break;
       }
     }
     return toolUsed;
