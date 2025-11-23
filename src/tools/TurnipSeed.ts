@@ -15,11 +15,15 @@ export class TurnipSeed extends Tool {
     return `Turnip Seed x${this.count}`;
   }
 
-  public consume(): void {
-    this.count--;
+  get isDepleted(): boolean {
+    return this.count <= 0;
   }
 
   use(player: Player): boolean {
+    if (this.isDepleted) {
+      return false;
+    }
+
     const { x, y } = player;
     const centerGridX = Math.floor(x / TileMap.TILE_SIZE);
     const centerGridY = Math.floor(y / TileMap.TILE_SIZE);
@@ -55,6 +59,10 @@ export class TurnipSeed extends Tool {
           seedUsed = true;
         }
       }
+    }
+
+    if (seedUsed) {
+      this.count--;
     }
 
     return seedUsed;
