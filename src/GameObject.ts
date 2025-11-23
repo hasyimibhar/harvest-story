@@ -1,5 +1,4 @@
 import { Container } from "pixi.js";
-import { Tool } from "./tools/Tool";
 import { TileMap } from "./TileMap";
 
 export class GameObject extends Container {
@@ -38,14 +37,5 @@ export class GameObject extends Container {
 
   public onPlace(): boolean {
     return true;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public onToolUse(_tool: Tool): {
-    destroyed: boolean;
-    used: boolean;
-    passThrough: boolean;
-  } {
-    return { destroyed: false, used: false, passThrough: false };
   }
 }

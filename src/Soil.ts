@@ -1,8 +1,5 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
 import { GameObject } from "./GameObject";
-import { Tool } from "./tools/Tool";
-import { Hoe } from "./tools/Hoe";
-import { WateringCan } from "./tools/WateringCan";
 import { TileMap } from "./TileMap";
 
 export class Soil extends GameObject {
@@ -32,25 +29,22 @@ export class Soil extends GameObject {
     return false;
   }
 
-  public onToolUse(tool: Tool): {
-    destroyed: boolean;
-    used: boolean;
-    passThrough: boolean;
-  } {
-    if (tool instanceof Hoe) {
-      if (!this.isTilled) {
-        this.isTilled = true;
-        this.sprite.texture = this.createTexture(0x8b4513); // Dark brown
-        return { destroyed: false, used: true, passThrough: false };
-      }
-    } else if (tool instanceof WateringCan) {
-      if (this.isTilled && !this.isWatered) {
-        this.isWatered = true;
-        this.sprite.texture = this.createTexture(0x5d2906); // Darker brown (Watered)
-        return { destroyed: false, used: true, passThrough: false };
-      }
+  public till(): boolean {
+    if (!this.isTilled) {
+      this.isTilled = true;
+      this.sprite.texture = this.createTexture(0x8b4513); // Dark brown
+      return true;
     }
-    return { destroyed: false, used: false, passThrough: false };
+    return false;
+  }
+
+  public water(): boolean {
+    if (this.isTilled && !this.isWatered) {
+      this.isWatered = true;
+      this.sprite.texture = this.createTexture(0x5d2906); // Darker brown (Watered)
+      return true;
+    }
+    return false;
   }
 
   public canPlant(): boolean {

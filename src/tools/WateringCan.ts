@@ -1,5 +1,7 @@
 import { Tool } from "./Tool";
 import { Player } from "../Player";
+import { Soil } from "../Soil";
+import { Plant } from "../plants/Plant";
 
 export class WateringCan extends Tool {
   constructor() {
@@ -11,17 +13,16 @@ export class WateringCan extends Tool {
     const objects = player.getWorld().getObjectsAt(targetX, targetY);
     let toolUsed = false;
 
+    // Iterate top-down (getObjectsAt returns [Top, Bottom])
     for (const obj of objects) {
-      const result = obj.onToolUse(this);
-      if (result.destroyed) {
-        player.getWorld().removeObject(obj);
-      }
-      if (result.used) {
-        toolUsed = true;
+      // Skip plants (pass through to soil below)
+      if (obj instanceof Plant) {
+        continue;
       }
 
-      if (!result.passThrough) {
-        break;
+      if (obj instanceof Soil) {
+        toolUsed = obj.water();
+        break; // Stop after watering soil
       }
     }
     return toolUsed;

@@ -2,7 +2,7 @@ import { Tool } from "./Tool";
 import { Player } from "../Player";
 import { TileMap } from "../TileMap";
 import { Soil } from "../Soil";
-import { Plant } from "../Plant";
+import { Plant } from "../plants/Plant";
 
 export class TurnipSeed extends Tool {
   public count: number = 2;

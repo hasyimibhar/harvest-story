@@ -1,7 +1,5 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
 import { GameObject } from "./GameObject";
-import { Tool } from "./tools/Tool";
-import { Hammer } from "./tools/Hammer";
 import { TileMap } from "./TileMap";
 
 export class Boulder extends GameObject {
@@ -28,26 +26,19 @@ export class Boulder extends GameObject {
     return false;
   }
 
-  public onToolUse(tool: Tool): {
-    destroyed: boolean;
-    used: boolean;
-    passThrough: boolean;
-  } {
-    if (tool instanceof Hammer) {
-      this.health--;
-      if (this.health <= 0) {
-        return { destroyed: true, used: true, passThrough: false }; // Destroyed
-      }
-
-      // Visual feedback (flash red)
-      this.children[0].tint = 0xff0000;
-      setTimeout(() => {
-        if (this.children.length > 0) {
-          this.children[0].tint = 0xffffff;
-        }
-      }, 100);
-      return { destroyed: false, used: true, passThrough: false };
+  public takeDamage(): boolean {
+    this.health--;
+    if (this.health <= 0) {
+      return true; // Destroyed
     }
-    return { destroyed: false, used: false, passThrough: false };
+
+    // Visual feedback (flash red)
+    this.children[0].tint = 0xff0000;
+    setTimeout(() => {
+      if (this.children.length > 0) {
+        this.children[0].tint = 0xffffff;
+      }
+    }, 100);
+    return false; // Not destroyed yet
   }
 }

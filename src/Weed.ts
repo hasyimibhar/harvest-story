@@ -1,7 +1,5 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
 import { GameObject } from "./GameObject";
-import { Tool } from "./tools/Tool";
-import { Sickle } from "./tools/Sickle";
 import { TileMap } from "./TileMap";
 
 export class Weed extends GameObject {
@@ -33,14 +31,7 @@ export class Weed extends GameObject {
     return false;
   }
 
-  public onToolUse(tool: Tool): {
-    destroyed: boolean;
-    used: boolean;
-    passThrough: boolean;
-  } {
-    if (tool instanceof Sickle) {
-      return { destroyed: true, used: true, passThrough: false }; // Destroyed
-    }
-    return { destroyed: false, used: false, passThrough: false };
+  public cut(): boolean {
+    return true; // Always destroyed when cut
   }
 }

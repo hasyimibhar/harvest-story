@@ -1,5 +1,6 @@
 import { Tool } from "./Tool";
 import { Player } from "../Player";
+import { Boulder } from "../Boulder";
 
 export class Hammer extends Tool {
   constructor() {
@@ -13,17 +14,13 @@ export class Hammer extends Tool {
 
     // Iterate top-down (getObjectsAt returns [Top, Bottom])
     for (const obj of objects) {
-      // No need to check isAt, getObjectsAt guarantees it
-      const result = obj.onToolUse(this);
-      if (result.destroyed) {
-        player.getWorld().removeObject(obj);
-      }
-      if (result.used) {
+      if (obj instanceof Boulder) {
+        const destroyed = obj.takeDamage();
+        if (destroyed) {
+          player.getWorld().removeObject(obj);
+        }
         toolUsed = true;
-      }
-
-      if (!result.passThrough) {
-        break; // Swallow tool use
+        break; // Hammer doesn't pass through
       }
     }
     return toolUsed;

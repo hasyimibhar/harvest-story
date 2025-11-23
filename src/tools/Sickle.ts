@@ -1,5 +1,6 @@
 import { Tool } from "./Tool";
 import { Player } from "../Player";
+import { Weed } from "../Weed";
 
 export class Sickle extends Tool {
   constructor() {
@@ -11,17 +12,15 @@ export class Sickle extends Tool {
     const objects = player.getWorld().getObjectsAt(targetX, targetY);
     let toolUsed = false;
 
+    // Iterate top-down (getObjectsAt returns [Top, Bottom])
     for (const obj of objects) {
-      const result = obj.onToolUse(this);
-      if (result.destroyed) {
-        player.getWorld().removeObject(obj);
-      }
-      if (result.used) {
+      if (obj instanceof Weed) {
+        const destroyed = obj.cut();
+        if (destroyed) {
+          player.getWorld().removeObject(obj);
+        }
         toolUsed = true;
-      }
-
-      if (!result.passThrough) {
-        break;
+        break; // Sickle doesn't pass through
       }
     }
     return toolUsed;

@@ -1,9 +1,7 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
-import { GameObject } from "./GameObject";
-import { Tool } from "./tools/Tool";
-import { WateringCan } from "./tools/WateringCan";
-import { TileMap } from "./TileMap";
-import { Soil } from "./Soil";
+import { GameObject } from "../GameObject";
+import { TileMap } from "../TileMap";
+import { Soil } from "../Soil";
 
 export class Plant extends GameObject {
   private sprite: Sprite;
@@ -29,17 +27,5 @@ export class Plant extends GameObject {
     const texture = renderer.generateTexture(g);
     this.sprite = new Sprite(texture);
     this.addChild(this.sprite);
-  }
-
-  public onToolUse(tool: Tool): {
-    destroyed: boolean;
-    used: boolean;
-    passThrough: boolean;
-  } {
-    if (tool instanceof WateringCan) {
-      // Pass through watering can to soil below
-      return { destroyed: false, used: false, passThrough: true };
-    }
-    return { destroyed: false, used: false, passThrough: false };
   }
 }

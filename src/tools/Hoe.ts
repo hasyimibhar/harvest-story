@@ -1,5 +1,6 @@
 import { Tool } from "./Tool";
 import { Player } from "../Player";
+import { Soil } from "../Soil";
 
 export class Hoe extends Tool {
   constructor() {
@@ -11,17 +12,11 @@ export class Hoe extends Tool {
     const objects = player.getWorld().getObjectsAt(targetX, targetY);
     let toolUsed = false;
 
+    // Iterate top-down (getObjectsAt returns [Top, Bottom])
     for (const obj of objects) {
-      const result = obj.onToolUse(this);
-      if (result.destroyed) {
-        player.removeObject(obj);
-      }
-      if (result.used) {
-        toolUsed = true;
-      }
-
-      if (!result.passThrough) {
-        break;
+      if (obj instanceof Soil) {
+        toolUsed = obj.till();
+        break; // Hoe doesn't pass through
       }
     }
     return toolUsed;
