@@ -21,13 +21,13 @@ export class Player extends Container {
         super();
 
         const graphics = new Graphics()
-            .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
+            .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE * 1.5)
             .fill(0xFF0000); // Red player
 
         const texture = renderer.generateTexture(graphics);
 
         this.sprite = new Sprite(texture);
-        this.sprite.anchor.set(0.5);
+        this.sprite.anchor.set(0.5, 2 / 3); // Align bottom of sprite with bottom of tile (approx)
         this.addChild(this.sprite);
 
         // this.scale.set(0.8); // Make player slightly smaller than tile
