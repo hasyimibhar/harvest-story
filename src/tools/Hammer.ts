@@ -15,10 +15,7 @@ export class Hammer extends Tool {
     // Iterate top-down (getObjectsAt returns [Top, Bottom])
     for (const obj of objects) {
       if (obj instanceof Boulder) {
-        const destroyed = obj.takeDamage();
-        if (destroyed) {
-          player.getWorld().removeObject(obj);
-        }
+        obj.takeDamage();
         toolUsed = true;
         break; // Hammer doesn't pass through
       }

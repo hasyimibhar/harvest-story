@@ -29,6 +29,7 @@ export class Boulder extends GameObject {
   public takeDamage(): boolean {
     this.health--;
     if (this.health <= 0) {
+      this.kill();
       return true; // Destroyed
     }
 

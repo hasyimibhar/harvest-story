@@ -22,7 +22,7 @@ export class Hoe extends Tool {
 
       // Hoe can be used to unseed a soil
       if (obj instanceof Plant && obj.isSeed) {
-        player.getWorld().removeObject(obj);
+        obj.kill();
         toolUsed = true;
         break;
       }

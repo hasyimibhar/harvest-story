@@ -16,14 +16,14 @@ export class Sickle extends Tool {
     // Iterate top-down (getObjectsAt returns [Top, Bottom])
     for (const obj of objects) {
       if (obj instanceof Weed) {
-        player.getWorld().removeObject(obj);
+        obj.kill();
         toolUsed = true;
         break;
       }
 
       // Sickle destroys plants, unless it's still a seed
       if (obj instanceof Plant && !obj.isSeed) {
-        player.getWorld().removeObject(obj);
+        obj.kill();
         toolUsed = true;
         break;
       }
