@@ -16,7 +16,6 @@ export default tseslint.config(
       sourceType: "module",
     },
     rules: {
-      indent: ["error", 4],
     },
   },
 );
