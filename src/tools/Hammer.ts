@@ -16,7 +16,7 @@ export class Hammer extends Tool {
       // No need to check isAt, getObjectsAt guarantees it
       const result = obj.onToolUse(this);
       if (result.destroyed) {
-        player.removeObject(obj);
+        player.getWorld().removeObject(obj);
       }
       if (result.used) {
         toolUsed = true;

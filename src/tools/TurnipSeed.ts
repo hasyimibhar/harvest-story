@@ -5,8 +5,18 @@ import { Soil } from "../Soil";
 import { Plant } from "../Plant";
 
 export class TurnipSeed extends Tool {
+  public count: number = 2;
+
   constructor() {
     super("Turnip Seed", true); // Consumable
+  }
+
+  get name(): string {
+    return `Turnip Seed x${this.count}`;
+  }
+
+  public consume(): void {
+    this.count--;
   }
 
   use(player: Player): boolean {
@@ -41,7 +51,7 @@ export class TurnipSeed extends Tool {
         if (!isBlocked && targetSoil && targetSoil.canPlant()) {
           // Create Plant
           const plant = new Plant(targetSoil, renderer);
-          player.addObject(plant);
+          player.getWorld().addObject(plant);
           seedUsed = true;
         }
       }

@@ -14,7 +14,7 @@ export class WateringCan extends Tool {
     for (const obj of objects) {
       const result = obj.onToolUse(this);
       if (result.destroyed) {
-        player.removeObject(obj);
+        player.getWorld().removeObject(obj);
       }
       if (result.used) {
         toolUsed = true;

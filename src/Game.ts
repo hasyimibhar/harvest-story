@@ -146,7 +146,7 @@ export class Game {
 
     // Create tool text
     this.toolText = new Text({
-      text: `Tool: ${this.player.getSelectedTool().name}`,
+      text: `Tool: ${this.player?.getSelectedTool()?.name || "None"}`,
       style: {
         fontFamily: "Arial",
         fontSize: 24,
@@ -164,7 +164,7 @@ export class Game {
           this.player.update(ticker);
           // Update tool UI
           if (this.toolText) {
-            this.toolText.text = `Tool: ${this.player.getSelectedTool().name}`;
+            this.toolText.text = `Tool: ${this.player.getSelectedTool()?.name || "None"}`;
           }
         }
 
