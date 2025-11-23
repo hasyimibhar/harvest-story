@@ -26,11 +26,11 @@ export class Boulder extends GameObject {
         return false;
     }
 
-    public onToolUse(toolType: string): boolean {
+    public onToolUse(toolType: string): { destroyed: boolean, used: boolean } {
         if (toolType === "Hammer") {
             this.health--;
             if (this.health <= 0) {
-                return true; // Destroyed
+                return { destroyed: true, used: true }; // Destroyed
             }
 
             // Visual feedback (flash red)
@@ -40,7 +40,8 @@ export class Boulder extends GameObject {
                     this.children[0].tint = 0xFFFFFF;
                 }
             }, 100);
+            return { destroyed: false, used: true };
         }
-        return false;
+        return { destroyed: false, used: false };
     }
 }

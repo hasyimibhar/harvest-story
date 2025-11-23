@@ -11,7 +11,7 @@ export class Player extends Container {
     private heldObject: GameObject | null = null;
 
     // Tool system
-    public toolBag: string[] = ["Hammer", "Hoe", "Sickle", "Watering Can", "None"];
+    public toolBag: string[] = ["Hammer", "Hoe", "Sickle", "Watering Can", "Turnip Seed"];
     public selectedToolIndex: number = 0;
 
     constructor(
@@ -99,18 +99,75 @@ export class Player extends Container {
         const currentTool = this.getSelectedTool();
         if (currentTool === "None") return;
 
+        if (currentTool === "Turnip Seed") {
+            // 3x3 area centered on player
+            const centerGridX = Math.floor(this.x / TileMap.TILE_SIZE);
+            const centerGridY = Math.floor(this.y / TileMap.TILE_SIZE);
+            let seedUsed = false;
+
+            for (let x = centerGridX - 1; x <= centerGridX + 1; x++) {
+                for (let y = centerGridY - 1; y <= centerGridY + 1; y++) {
+                    // Find objects at this tile
+                    // Iterate in reverse to hit top object first
+                    for (let i = this.objects.length - 1; i >= 0; i--) {
+                        const obj = this.objects[i];
+                        if (obj.isAt(x, y)) {
+                            const result = obj.onToolUse(currentTool);
+                            if (result.used) {
+                                seedUsed = true;
+                            }
+                            if (result.destroyed) {
+                                this.objects.splice(i, 1);
+                                this.onRemoveObject(obj);
+                            }
+                            // For seeds, we might want to continue to other objects? 
+                            // Usually only one soil per tile. 
+                            // If there's a weed on top, seed shouldn't work on soil?
+                            // But Weed doesn't react to Seed.
+                            // If Weed returns { used: false }, we continue?
+                            // No, usually we stop at the first object that *blocks* or *reacts*.
+                            // But Soil is at the bottom.
+                            // If there is a Boulder on top, we shouldn't seed the soil.
+                            // Boulder is solid.
+                            // If obj is solid, we should probably stop?
+                            if (obj.isSolid) {
+                                break;
+                            }
+                            // If we successfully used the tool (e.g. seeded soil), we stop for this tile.
+                            if (result.used) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (seedUsed) {
+                // Consume seed
+                this.toolBag[this.selectedToolIndex] = "None";
+                // Update UI if needed (Game.ts loop handles it)
+            }
+            return;
+        }
+
+        // Standard tool usage (single tile)
         const { targetX, targetY } = this.getTargetTile();
 
         // Iterate in reverse order
         for (let i = this.objects.length - 1; i >= 0; i--) {
             const obj = this.objects[i];
             if (obj.isAt(targetX, targetY)) {
-                const destroyed = obj.onToolUse(currentTool);
-                if (destroyed) {
+                const result = obj.onToolUse(currentTool);
+                if (result.destroyed) {
                     this.objects.splice(i, 1);
                     this.onRemoveObject(obj);
                 }
-                break; // Only hit top object
+                if (result.used) {
+                    break; // Stop if tool was used
+                }
+                // If not used, continue to next object (e.g. trying to hit soil under weed?)
+                // But usually we only hit top object.
+                break;
             }
         }
     }

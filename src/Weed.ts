@@ -27,10 +27,10 @@ export class Weed extends GameObject {
         return false;
     }
 
-    public onToolUse(toolType: string): boolean {
+    public onToolUse(toolType: string): { destroyed: boolean, used: boolean } {
         if (toolType === "Sickle") {
-            return true; // Destroyed
+            return { destroyed: true, used: true }; // Destroyed
         }
-        return false;
+        return { destroyed: false, used: false };
     }
 }
