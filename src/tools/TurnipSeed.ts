@@ -2,7 +2,7 @@ import { Tool } from "./Tool";
 import { Player } from "../Player";
 import { TileMap } from "../TileMap";
 import { Soil } from "../Soil";
-import { Plant } from "../plants/Plant";
+import { TurnipPlant } from "../plants/TurnipPlant";
 
 export class TurnipSeed extends Tool {
   public count: number = 2;
@@ -53,8 +53,8 @@ export class TurnipSeed extends Tool {
           }
         }
         if (!isBlocked && targetSoil && targetSoil.canPlant()) {
-          // Create Plant
-          const plant = new Plant(targetSoil, renderer);
+          // Create TurnipPlant
+          const plant = new TurnipPlant(targetSoil, renderer);
           player.getWorld().addObject(plant);
           seedUsed = true;
         }

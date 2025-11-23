@@ -4,7 +4,7 @@ import { TileMap } from "./TileMap";
 
 export class Soil extends GameObject {
   private isTilled: boolean = false;
-  private isWatered: boolean = false;
+  private __isWatered: boolean = false;
   private sprite: Sprite;
   private renderer: Renderer;
 
@@ -39,8 +39,8 @@ export class Soil extends GameObject {
   }
 
   public water(): boolean {
-    if (this.isTilled && !this.isWatered) {
-      this.isWatered = true;
+    if (this.isTilled && !this.__isWatered) {
+      this.__isWatered = true;
       this.sprite.texture = this.createTexture(0x5d2906); // Darker brown (Watered)
       return true;
     }
@@ -49,5 +49,22 @@ export class Soil extends GameObject {
 
   public canPlant(): boolean {
     return this.isTilled;
+  }
+
+  get isWatered(): boolean {
+    return this.__isWatered;
+  }
+
+  public resetWater(): boolean {
+    if (this.isWatered) {
+      this.__isWatered = false;
+      this.sprite.texture = this.createTexture(0x8b4513); // Back to tilled (dry)
+      return true;
+    }
+    return false;
+  }
+
+  public onDayPass(): boolean {
+    return this.resetWater();
   }
 }

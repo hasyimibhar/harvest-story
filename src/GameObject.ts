@@ -38,4 +38,8 @@ export class GameObject extends Container {
   public onPlace(): boolean {
     return true;
   }
+
+  public onDayPass(): boolean {
+    return true;
+  }
 }

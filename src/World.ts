@@ -2,6 +2,7 @@ import { Container } from "pixi.js";
 import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
 import { Soil } from "./Soil";
+import { Plant } from "./plants/Plant";
 
 export class World extends Container {
   private grid: GameObject[][][];
@@ -143,5 +144,27 @@ export class World extends Container {
 
   public addChildToMap(child: Container): void {
     this.addChildAt(child, 0); // Add at bottom (for TileMap)
+  }
+
+  public onDayPass(): void {
+    // Import Plant at the top if not already
+    // Grow plants if their soil is watered
+    for (const obj of this.objects) {
+      // Check if it's a Plant (we'll need to import Plant)
+      if (obj instanceof Plant) {
+        const plant = obj as Plant;
+        // Check if the soil is watered
+        if (plant.isWatered) {
+          plant.grow();
+        }
+      }
+    }
+
+    // Reset all soil water status
+    for (const obj of this.objects) {
+      if (obj instanceof Soil) {
+        obj.resetWater();
+      }
+    }
   }
 }

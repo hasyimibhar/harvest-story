@@ -13,6 +13,7 @@ export class Game {
   private inputManager: InputManager;
   private tileMap: TileMap | undefined;
   private player: Player | undefined;
+  private world: World | undefined;
   private currentDay: number = 1;
   private fadeOverlay: Graphics | undefined;
   private dayText: Text | undefined;
@@ -37,13 +38,13 @@ export class Game {
 
     // Create a world container to center everything
     // Create a world container to center everything
-    const world = new World();
-    this.app.stage.addChild(world);
+    this.world = new World();
+    this.app.stage.addChild(this.world);
 
     // Center the world container
-    world.x =
+    this.world.x =
       (this.app.screen.width - TileMap.MAP_WIDTH * TileMap.TILE_SIZE) / 2;
-    world.y =
+    this.world.y =
       (this.app.screen.height - TileMap.MAP_HEIGHT * TileMap.TILE_SIZE) / 2;
 
     const grassGraphics = new Graphics()
@@ -57,7 +58,7 @@ export class Game {
     const rockTexture = this.app.renderer.generateTexture(rockGraphics);
 
     this.tileMap = new TileMap(grassTexture, rockTexture);
-    world.addChildToMap(this.tileMap);
+    this.world.addChildToMap(this.tileMap);
 
     // Soil Layer and Object Layer are managed by World now
 
@@ -73,7 +74,7 @@ export class Game {
     for (let x = startX; x < startX + 10; x++) {
       for (let y = startY; y < startY + 10; y++) {
         const soil = new Soil(x, y, this.app.renderer);
-        world.addObject(soil);
+        this.world.addObject(soil);
       }
     }
 
@@ -84,19 +85,19 @@ export class Game {
       const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
 
       const boulder = new Boulder(x, y, this.app.renderer);
-      world.addObject(boulder);
+      this.world.addObject(boulder);
     }
 
     // Explicitly place a boulder on the soil patch for testing
     const testBoulder = new Boulder(startX + 5, startY + 5, this.app.renderer);
-    world.addObject(testBoulder);
+    this.world.addObject(testBoulder);
 
     // Add some fences
     for (let i = 0; i < 5; i++) {
       const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
       const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
       const fence = new Fence(x, y, this.app.renderer);
-      world.addObject(fence);
+      this.world.addObject(fence);
     }
 
     // Add some weeds
@@ -104,25 +105,25 @@ export class Game {
       const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
       const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
       const weed = new Weed(x, y, this.app.renderer);
-      world.addObject(weed);
+      this.world.addObject(weed);
     }
 
     this.player = new Player(
       this.app.renderer,
       this.inputManager,
       this.tileMap,
-      world,
+      this.world,
     );
     this.player.x = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
     this.player.y = 10 * TileMap.TILE_SIZE + TileMap.TILE_SIZE / 2;
 
     // Highlight Graphics (above objects, below player)
     const highlightGraphics = new Graphics();
-    world.addChild(highlightGraphics);
+    this.world.addChild(highlightGraphics);
     this.player.setHighlightGraphics(highlightGraphics);
 
     // Add player to objectLayer for proper depth sorting
-    world.addToObjectLayer(this.player);
+    this.world.addToObjectLayer(this.player);
 
     // Create fade overlay (initially transparent)
     this.fadeOverlay = new Graphics();
@@ -176,7 +177,9 @@ export class Game {
         }
 
         // Sort objects by Y position
-        world.sortObjects();
+        if (this.world) {
+          this.world.sortObjects();
+        }
       }
 
       this.inputManager.update();
@@ -197,6 +200,11 @@ export class Game {
     this.currentDay++;
     if (this.dayText) {
       this.dayText.text = `Day ${this.currentDay}`;
+    }
+
+    // Process day pass events (grow plants, reset water)
+    if (this.world) {
+      this.world.onDayPass();
     }
 
     // Fade in (0.5s)

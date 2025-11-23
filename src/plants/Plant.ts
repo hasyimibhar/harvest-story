@@ -5,9 +5,13 @@ import { Soil } from "../Soil";
 
 export class Plant extends GameObject {
   private sprite: Sprite;
+  protected age: number = 0;
+  protected maturityAge: number = 1; // Default maturity age
+  protected soil: Soil;
 
-  constructor(_soil: Soil, renderer: Renderer) {
-    super(_soil.gridX, _soil.gridY, 1, 1);
+  constructor(soil: Soil, renderer: Renderer) {
+    super(soil.gridX, soil.gridY, 1, 1);
+    this.soil = soil;
     this.isSolid = false;
     this.isPickupable = false; // Plants can't be picked up (yet)
 
@@ -27,5 +31,32 @@ export class Plant extends GameObject {
     const texture = renderer.generateTexture(g);
     this.sprite = new Sprite(texture);
     this.addChild(this.sprite);
+  }
+
+  public grow(): boolean {
+    if (!this.isMature()) {
+      this.age++;
+      return true;
+    }
+    return false;
+  }
+
+  public getAge(): number {
+    return this.age;
+  }
+
+  public isMature(): boolean {
+    return this.age >= this.maturityAge;
+  }
+
+  get isWatered(): boolean {
+    return this.soil.isWatered;
+  }
+
+  public onDayPass(): boolean {
+    if (this.isWatered) {
+      return this.grow();
+    }
+    return false;
   }
 }
