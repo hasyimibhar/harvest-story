@@ -36,17 +36,6 @@ export class Game {
   private createScene(): void {
     console.log("Creating scene...");
 
-    // Create a world container to center everything
-    // Create a world container to center everything
-    this.world = new World();
-    this.app.stage.addChild(this.world);
-
-    // Center the world container
-    this.world.x =
-      (this.app.screen.width - TileMap.MAP_WIDTH * TileMap.TILE_SIZE) / 2;
-    this.world.y =
-      (this.app.screen.height - TileMap.MAP_HEIGHT * TileMap.TILE_SIZE) / 2;
-
     const grassGraphics = new Graphics()
       .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
       .fill(0x00ff00);
@@ -58,7 +47,16 @@ export class Game {
     const rockTexture = this.app.renderer.generateTexture(rockGraphics);
 
     this.tileMap = new TileMap(grassTexture, rockTexture);
-    this.world.addChildToMap(this.tileMap);
+
+    // Create a world container to center everything
+    this.world = new World(this.tileMap);
+    this.app.stage.addChild(this.world);
+
+    // Center the world container
+    this.world.x =
+      (this.app.screen.width - TileMap.MAP_WIDTH * TileMap.TILE_SIZE) / 2;
+    this.world.y =
+      (this.app.screen.height - TileMap.MAP_HEIGHT * TileMap.TILE_SIZE) / 2;
 
     // Soil Layer and Object Layer are managed by World now
 
@@ -87,10 +85,6 @@ export class Game {
       const boulder = new Boulder(x, y, this.app.renderer);
       this.world.addObject(boulder);
     }
-
-    // Explicitly place a boulder on the soil patch for testing
-    const testBoulder = new Boulder(startX + 5, startY + 5, this.app.renderer);
-    this.world.addObject(testBoulder);
 
     // Add some fences
     for (let i = 0; i < 5; i++) {

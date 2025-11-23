@@ -5,6 +5,7 @@ import { Soil } from "./Soil";
 import { Player } from "./Player";
 
 export class World extends Container {
+  private _tileMap: TileMap;
   private grid: GameObject[][][];
   private objects: GameObject[] = [];
   private player: Player | undefined;
@@ -13,8 +14,11 @@ export class World extends Container {
   private soilLayer: Container;
   private objectLayer: Container;
 
-  constructor() {
+  constructor(tileMap: TileMap) {
     super();
+
+    this._tileMap = tileMap;
+    this.addChildAt(tileMap, 0);
 
     // Initialize layers
     this.soilLayer = new Container();
@@ -30,6 +34,10 @@ export class World extends Container {
         this.grid[x][y] = [];
       }
     }
+  }
+
+  get tileMap(): TileMap {
+    return this._tileMap;
   }
 
   public update(ticker: Ticker) {
@@ -159,10 +167,6 @@ export class World extends Container {
     this.objectLayer.addChild(this.player);
   }
 
-  public addChildToMap(child: Container): void {
-    this.addChildAt(child, 0); // Add at bottom (for TileMap)
-  }
-
   public onDayPass(): void {
     // Loop through all coordinates
     for (let x = 0; x < TileMap.MAP_WIDTH; x++) {
@@ -176,5 +180,62 @@ export class World extends Container {
         }
       }
     }
+  }
+
+  public placeObject(
+    obj: GameObject,
+    targetX: number,
+    targetY: number,
+  ): boolean {
+    if (this.canPlaceObject(obj, targetX, targetY)) {
+      // Handle placement logic (e.g., Weed destroys itself)
+      if (obj.onPlace()) {
+        // Add back to game world if onPlace returns true
+        obj.gridX = targetX;
+        obj.gridY = targetY;
+        obj.x = targetX * TileMap.TILE_SIZE;
+        obj.y = targetY * TileMap.TILE_SIZE;
+        this.addObject(obj);
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
+  private canPlaceObject(_obj: GameObject, x: number, y: number): boolean {
+    // Check map bounds
+    if (x < 0 || x >= TileMap.MAP_WIDTH || y < 0 || y >= TileMap.MAP_HEIGHT) {
+      return false;
+    }
+
+    // Check if tile type is valid
+    // We need to get tile type from TileMap.
+    // Since TileMap doesn't expose getTileAt, we can check isBlocked for rocks.
+    // But Fence logic says "Grass or Soil".
+    // TileMap.isBlocked returns true for rocks.
+    if (this._tileMap.isBlocked(x, y)) {
+      return false;
+    }
+
+    // Check for other objects blocking
+    const objects = this.getObjectsAt(x, y);
+    for (const other of objects) {
+      // Special case: Fence can be placed on Soil
+      // If 'other' is Soil, it's okay IF the object allows it.
+      // But Soil is an object.
+      // We need a way to check if 'other' is Soil.
+      // For now, let's assume if there's ANY object, we can't place, UNLESS it's Soil.
+      // But we don't have instanceof check easily without importing Soil.
+      // Let's use isSolid. Soil is NOT solid.
+      if (other.isSolid) {
+        return false;
+      }
+      // If it's not solid (like Soil), we can place on it?
+      // Yes, user said "For fence, it can only be placed down on grass or soil."
+    }
+
+    return _obj.canBePlacedOn(this, x, y);
   }
 }

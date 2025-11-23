@@ -74,4 +74,11 @@ export class TileMap extends Container {
     }
     return this.mapData[y][x] === 1;
   }
+
+  public getTileType(x: number, y: number): number {
+    if (x < 0 || x >= TileMap.MAP_WIDTH || y < 0 || y >= TileMap.MAP_HEIGHT) {
+      return -1; // Invalid tile
+    }
+    return this.mapData[y][x];
+  }
 }

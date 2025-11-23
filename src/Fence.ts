@@ -20,11 +20,4 @@ export class Fence extends GameObject {
 
     this.addChild(sprite);
   }
-
-  public canBePlacedOn(tileType: number): boolean {
-    // Can be placed on Grass (0)
-    // Note: Soil check needs to be done in Player or Game because tileType only comes from TileMap
-    // But for now, let's assume tileType 0 is valid.
-    return tileType === 0;
-  }
 }

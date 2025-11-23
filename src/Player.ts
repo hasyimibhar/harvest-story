@@ -166,23 +166,12 @@ export class Player extends Container {
     }
 
     if (this.heldObject) {
-      // Try to place object
-      if (this.canPlaceObject(this.heldObject, targetX, targetY)) {
-        this.heldObject.gridX = targetX;
-        this.heldObject.gridY = targetY;
-        this.heldObject.x = targetX * TileMap.TILE_SIZE;
-        this.heldObject.y = targetY * TileMap.TILE_SIZE;
+      this.removeChild(this.heldObject);
 
-        // Remove from player children
-        this.removeChild(this.heldObject);
-
-        // Handle placement logic (e.g., Weed destroys itself)
-        if (this.heldObject.onPlace()) {
-          // Add back to game world if onPlace returns true
-          this.world.addObject(this.heldObject);
-        }
-
+      if (this.world.placeObject(this.heldObject, targetX, targetY)) {
         this.heldObject = null;
+      } else {
+        this.addChild(this.heldObject);
       }
     } else {
       // Try to interact or pickup
@@ -190,22 +179,16 @@ export class Player extends Container {
       const objects = this.world.getObjectsAt(targetX, targetY);
       for (const obj of objects) {
         if (obj.isPickupable) {
-          // Pickup object
+          // Remove object first before pickup
           this.world.removeObject(obj);
-          this.heldObject = obj;
-          this.addChild(obj);
-          obj.x = 0;
-          obj.y = -TileMap.TILE_SIZE / 2; // Position above head
+          this.pickupObject(obj);
           return;
         }
 
         const produce = obj.interact();
         if (produce) {
-          // Pick up the produce
-          this.heldObject = produce;
-          this.addChild(produce);
-          produce.x = 0;
-          produce.y = -TileMap.TILE_SIZE / 2; // Position above head
+          // No need to remove produce because it's not added to world yet
+          this.pickupObject(produce);
           return;
         }
         break; // Only interact with one object at a time (the top one)
@@ -213,39 +196,11 @@ export class Player extends Container {
     }
   }
 
-  private canPlaceObject(_obj: GameObject, x: number, y: number): boolean {
-    // Check map bounds
-    if (x < 0 || x >= TileMap.MAP_WIDTH || y < 0 || y >= TileMap.MAP_HEIGHT) {
-      return false;
-    }
-
-    // Check if tile type is valid
-    // We need to get tile type from TileMap.
-    // Since TileMap doesn't expose getTileAt, we can check isBlocked for rocks.
-    // But Fence logic says "Grass or Soil".
-    // TileMap.isBlocked returns true for rocks.
-    if (this.tileMap.isBlocked(x, y)) {
-      return false;
-    }
-
-    // Check for other objects blocking
-    const objects = this.world.getObjectsAt(x, y);
-    for (const other of objects) {
-      // Special case: Fence can be placed on Soil
-      // If 'other' is Soil, it's okay IF the object allows it.
-      // But Soil is an object.
-      // We need a way to check if 'other' is Soil.
-      // For now, let's assume if there's ANY object, we can't place, UNLESS it's Soil.
-      // But we don't have instanceof check easily without importing Soil.
-      // Let's use isSolid. Soil is NOT solid.
-      if (other.isSolid) {
-        return false;
-      }
-      // If it's not solid (like Soil), we can place on it?
-      // Yes, user said "For fence, it can only be placed down on grass or soil."
-    }
-
-    return true;
+  private pickupObject(obj: GameObject): void {
+    this.heldObject = obj;
+    this.addChild(obj);
+    obj.x = 0;
+    obj.y = -TileMap.TILE_SIZE / 2; // Position above head
   }
 
   private highlightGraphics: Graphics | null = null;

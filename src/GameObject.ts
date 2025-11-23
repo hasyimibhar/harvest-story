@@ -1,5 +1,6 @@
 import { Container } from "pixi.js";
 import { TileMap } from "./TileMap";
+import { World } from "./World";
 
 export class GameObject extends Container {
   public isSolid: boolean = true;
@@ -31,11 +32,6 @@ export class GameObject extends Container {
 
   public isPickupable: boolean = false;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public onTileCollision(_tileType: number): boolean {
-    return true;
-  }
-
   public onPlace(): boolean {
     return true;
   }
@@ -50,5 +46,10 @@ export class GameObject extends Container {
 
   public kill(): void {
     this._isKilled = true;
+  }
+
+  // Handles special case, e.g. certain objects can only be placed on grass
+  public canBePlacedOn(_world: World, _gridX: number, _gridY: number): boolean {
+    return true;
   }
 }
