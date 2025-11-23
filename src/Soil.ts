@@ -5,7 +5,6 @@ import { TileMap } from "./TileMap";
 export class Soil extends GameObject {
     private isTilled: boolean = false;
     private isWatered: boolean = false;
-    private isSeeded: boolean = false;
     private sprite: Sprite;
     private renderer: Renderer;
 
@@ -30,39 +29,24 @@ export class Soil extends GameObject {
         return false;
     }
 
-    public onToolUse(toolType: string): { destroyed: boolean, used: boolean } {
+    public onToolUse(toolType: string): { destroyed: boolean, used: boolean, passThrough: boolean } {
         if (toolType === "Hoe") {
             if (!this.isTilled) {
                 this.isTilled = true;
                 this.sprite.texture = this.createTexture(0x8B4513); // Dark brown
-                return { destroyed: false, used: true };
+                return { destroyed: false, used: true, passThrough: false };
             }
         } else if (toolType === "Watering Can") {
             if (this.isTilled && !this.isWatered) {
                 this.isWatered = true;
                 this.sprite.texture = this.createTexture(0x5D2906); // Darker brown (Watered)
-                return { destroyed: false, used: true };
-            }
-        } else if (toolType === "Turnip Seed") {
-            if (this.isTilled && !this.isSeeded) {
-                this.isSeeded = true;
-                // Add seed visuals (4 circles)
-                const seedColor = 0xF5DEB3; // Wheat color
-                const r = TileMap.TILE_SIZE / 8;
-                const offset = TileMap.TILE_SIZE / 4;
-
-                const g = new Graphics();
-                g.circle(offset, offset, r).fill(seedColor);
-                g.circle(TileMap.TILE_SIZE - offset, offset, r).fill(seedColor);
-                g.circle(offset, TileMap.TILE_SIZE - offset, r).fill(seedColor);
-                g.circle(TileMap.TILE_SIZE - offset, TileMap.TILE_SIZE - offset, r).fill(seedColor);
-
-                const seedSprite = new Sprite(this.renderer.generateTexture(g));
-                this.addChild(seedSprite);
-
-                return { destroyed: false, used: true };
+                return { destroyed: false, used: true, passThrough: false };
             }
         }
-        return { destroyed: false, used: false };
+        return { destroyed: false, used: false, passThrough: false };
+    }
+
+    public canPlant(): boolean {
+        return this.isTilled;
     }
 }

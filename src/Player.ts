@@ -2,6 +2,8 @@ import { Container, Sprite, Ticker, Graphics, Renderer } from "pixi.js";
 import { InputManager } from "./InputManager";
 import { TileMap } from "./TileMap";
 import { GameObject } from "./GameObject";
+import { Soil } from "./Soil";
+import { Plant } from "./Plant";
 
 export class Player extends Container {
     private speed = 2;
@@ -15,7 +17,7 @@ export class Player extends Container {
     public selectedToolIndex: number = 0;
 
     constructor(
-        renderer: Renderer,
+        private renderer: Renderer,
         private inputManager: InputManager,
         private tileMap: TileMap,
         private objects: GameObject[],
@@ -108,36 +110,53 @@ export class Player extends Container {
             for (let x = centerGridX - 1; x <= centerGridX + 1; x++) {
                 for (let y = centerGridY - 1; y <= centerGridY + 1; y++) {
                     // Find objects at this tile
-                    // Iterate in reverse to hit top object first
+                    // Check if there is already a plant or blocking object
+                    let targetSoil: Soil | null = null;
+                    let isBlocked = false;
+
+                    // Iterate to find soil and check for blockers
                     for (let i = this.objects.length - 1; i >= 0; i--) {
                         const obj = this.objects[i];
                         if (obj.isAt(x, y)) {
-                            const result = obj.onToolUse(currentTool);
-                            if (result.used) {
-                                seedUsed = true;
-                            }
-                            if (result.destroyed) {
-                                this.objects.splice(i, 1);
-                                this.onRemoveObject(obj);
-                            }
-                            // For seeds, we might want to continue to other objects? 
-                            // Usually only one soil per tile. 
-                            // If there's a weed on top, seed shouldn't work on soil?
-                            // But Weed doesn't react to Seed.
-                            // If Weed returns { used: false }, we continue?
-                            // No, usually we stop at the first object that *blocks* or *reacts*.
-                            // But Soil is at the bottom.
-                            // If there is a Boulder on top, we shouldn't seed the soil.
-                            // Boulder is solid.
-                            // If obj is solid, we should probably stop?
                             if (obj.isSolid) {
+                                isBlocked = true;
                                 break;
                             }
-                            // If we successfully used the tool (e.g. seeded soil), we stop for this tile.
-                            if (result.used) {
-                                break;
+                            // Check if it's a Plant (or any other non-soil object that blocks planting?)
+                            // For now, assume only Soil is valid base.
+                            // If there's a Weed, it's not solid, but we shouldn't plant on it?
+                            // Weed is not solid.
+                            // If there is a Plant, we shouldn't plant.
+                            // We need to check if there is ALREADY a plant here.
+                            // Since Plant is a GameObject, we can check instanceof Plant?
+                            // But Plant class is not imported here yet.
+                            // We can check if obj.constructor.name === "Plant"?
+                            // Or better, check if we found soil, and if we found anything else on top of it.
+
+                            if (obj instanceof Soil) {
+                                targetSoil = obj;
+                            } else {
+                                // Any other object on top of soil blocks planting (e.g. Weed, Fence, existing Plant)
+                                // Fence is solid, handled above.
+                                // Weed is not solid.
+                                // Existing Plant is not solid.
+                                isBlocked = true;
                             }
                         }
+                    }
+
+                    if (!isBlocked && targetSoil && targetSoil.canPlant()) {
+                        // Create Plant
+                        // We don't have renderer stored in Player, but we passed it in constructor.
+                        // We should store it.
+                        // Wait, we can't change constructor signature easily without updating Game.ts.
+                        // Actually, Player constructor ALREADY takes renderer.
+                        // Let's check if it's stored.
+                        // It is NOT stored as a property.
+                        // I need to store it.
+                        const plant = new Plant(targetSoil, this.renderer);
+                        this.onAddObject(plant);
+                        seedUsed = true;
                     }
                 }
             }
@@ -162,12 +181,11 @@ export class Player extends Container {
                     this.objects.splice(i, 1);
                     this.onRemoveObject(obj);
                 }
-                if (result.used) {
-                    break; // Stop if tool was used
+
+                if (!result.passThrough) {
+                    break; // Swallow tool use (default)
                 }
-                // If not used, continue to next object (e.g. trying to hit soil under weed?)
-                // But usually we only hit top object.
-                break;
+                // If passThrough is true, continue to next object
             }
         }
     }

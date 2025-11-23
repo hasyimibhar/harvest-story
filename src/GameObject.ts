@@ -38,7 +38,7 @@ export class GameObject extends Container {
         return true;
     }
 
-    public onToolUse(toolType: string): { destroyed: boolean, used: boolean } {
-        return { destroyed: false, used: false };
+    public onToolUse(toolType: string): { destroyed: boolean, used: boolean, passThrough: boolean } {
+        return { destroyed: false, used: false, passThrough: false };
     }
 }
