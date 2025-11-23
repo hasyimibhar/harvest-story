@@ -3,14 +3,11 @@ import { InputManager } from "./InputManager";
 import { TileMap } from "./TileMap";
 import { GameObject } from "./GameObject";
 import { Tool } from "./tools/Tool";
-import { Hammer } from "./tools/Hammer";
-import { Hoe } from "./tools/Hoe";
-import { Sickle } from "./tools/Sickle";
-import { WateringCan } from "./tools/WateringCan";
-import { TurnipSeed } from "./tools/TurnipSeed";
 import { World } from "./World";
 
 import { Rucksack } from "./Rucksack";
+
+import { ToolBag } from "./ToolBag";
 
 export class Player extends Container {
   private speed = 2;
@@ -21,14 +18,7 @@ export class Player extends Container {
   public rucksack: Rucksack = new Rucksack();
 
   // Tool system
-  public toolBag: (Tool | null)[] = [
-    new Hammer(),
-    new Hoe(),
-    new Sickle(),
-    new WateringCan(),
-    new TurnipSeed(),
-  ];
-  public selectedToolIndex: number = 0;
+  public toolBag: ToolBag = new ToolBag();
 
   constructor(
     private renderer: Renderer,
@@ -118,15 +108,13 @@ export class Player extends Container {
   }
 
   public cycleTool(direction: number = 1): void {
-    this.selectedToolIndex =
-      (this.selectedToolIndex + direction + this.toolBag.length) %
-      this.toolBag.length;
+    this.toolBag.cycle(direction);
     const tool = this.getSelectedTool();
     console.log(`Selected tool: ${tool ? tool.name : "None"}`);
   }
 
   public getSelectedTool(): Tool | null {
-    return this.toolBag[this.selectedToolIndex];
+    return this.toolBag.getSelectedTool();
   }
 
   public useTool(): void {
@@ -136,7 +124,7 @@ export class Player extends Container {
     const used = currentTool.use(this);
 
     if (used && currentTool.isConsumable && currentTool.isDepleted) {
-      this.toolBag[this.selectedToolIndex] = null;
+      this.toolBag.setTool(this.toolBag.selectedIndex, null);
     }
   }
 
