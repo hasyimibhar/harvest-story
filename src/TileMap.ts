@@ -9,6 +9,7 @@ export class TileMap extends Container {
   constructor(
     private grassTexture: Texture,
     private rockTexture: Texture,
+    private waterTexture: Texture,
   ) {
     super();
     this.generateMap();
@@ -33,6 +34,22 @@ export class TileMap extends Container {
       }
       this.mapData.push(row);
     }
+
+    // Place 4x4 water patch in a random corner
+    const corners = [
+      { x: 1, y: 1 }, // Top-Left
+      { x: TileMap.MAP_WIDTH - 5, y: 1 }, // Top-Right
+      { x: 1, y: TileMap.MAP_HEIGHT - 5 }, // Bottom-Left
+      { x: TileMap.MAP_WIDTH - 5, y: TileMap.MAP_HEIGHT - 5 }, // Bottom-Right
+    ];
+
+    const corner = corners[Math.floor(Math.random() * corners.length)];
+
+    for (let y = corner.y; y < corner.y + 4; y++) {
+      for (let x = corner.x; x < corner.x + 4; x++) {
+        this.mapData[y][x] = 2; // Water
+      }
+    }
   }
 
   private renderMap(): void {
@@ -43,6 +60,8 @@ export class TileMap extends Container {
 
         if (tileType === 1) {
           sprite = new Sprite(this.rockTexture);
+        } else if (tileType === 2) {
+          sprite = new Sprite(this.waterTexture);
         } else {
           sprite = new Sprite(this.grassTexture);
         }
@@ -72,7 +91,8 @@ export class TileMap extends Container {
     if (x < 0 || x >= TileMap.MAP_WIDTH || y < 0 || y >= TileMap.MAP_HEIGHT) {
       return true;
     }
-    return this.mapData[y][x] === 1;
+    const tileType = this.mapData[y][x];
+    return tileType === 1 || tileType === 2; // Block Rock (1) and Water (2)
   }
 
   public getTileType(x: number, y: number): number {

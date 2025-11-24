@@ -46,7 +46,12 @@ export class Game {
       .fill(0x808080);
     const rockTexture = this.app.renderer.generateTexture(rockGraphics);
 
-    this.tileMap = new TileMap(grassTexture, rockTexture);
+    const waterGraphics = new Graphics()
+      .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
+      .fill(0x0000ff); // Blue water
+    const waterTexture = this.app.renderer.generateTexture(waterGraphics);
+
+    this.tileMap = new TileMap(grassTexture, rockTexture, waterTexture);
 
     // Create a world container to center everything
     this.world = new World(this.tileMap);
