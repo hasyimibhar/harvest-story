@@ -82,30 +82,33 @@ export class Game {
     }
 
     // Add some boulders, some might be on top of soil
-    for (let i = 0; i < 5; i++) {
-      // Random position within the map (excluding borders)
-      const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
-      const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
-
-      const boulder = new Boulder(x, y, this.app.renderer);
-      this.world.addObject(boulder);
+    // Add some boulders (2x2), ensure no overlap
+    for (let i = 0; i < 2; i++) {
+      const pos = this.findSafePosition(2, 2);
+      if (pos) {
+        const boulder = new Boulder(pos.x, pos.y, this.app.renderer);
+        this.world.addObject(boulder);
+      }
     }
 
     // Add some fences
     for (let i = 0; i < 5; i++) {
-      const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
-      const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
-      const fence = new Fence(x, y, this.app.renderer);
-      this.world.addObject(fence);
+      const pos = this.findSafePosition(1, 1);
+      if (pos) {
+        const fence = new Fence(pos.x, pos.y, this.app.renderer);
+        this.world.addObject(fence);
+      }
     }
 
     // Add some weeds
     for (let i = 0; i < 5; i++) {
-      const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 2)) + 1;
-      const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 2)) + 1;
-      const weed = new Weed(x, y, this.app.renderer);
-      this.world.addObject(weed);
+      const pos = this.findSafePosition(1, 1);
+      if (pos) {
+        const weed = new Weed(pos.x, pos.y, this.app.renderer);
+        this.world.addObject(weed);
+      }
     }
+
 
     this.player = new Player(
       this.app.renderer,
@@ -182,6 +185,40 @@ export class Game {
 
       this.inputManager.update();
     });
+  }
+
+  private findSafePosition(
+    width: number,
+    height: number,
+  ): { x: number; y: number } | null {
+    let attempts = 0;
+    while (attempts < 100) {
+      attempts++;
+      // Random position within the map (excluding borders)
+      const x = Math.floor(Math.random() * (TileMap.MAP_WIDTH - 1 - width)) + 1;
+      const y = Math.floor(Math.random() * (TileMap.MAP_HEIGHT - 1 - height)) + 1;
+
+      // Check for collision with existing objects or blocked tiles
+      let blocked = false;
+      for (let bx = x; bx < x + width; bx++) {
+        for (let by = y; by < y + height; by++) {
+          if (this.tileMap?.isBlocked(bx, by)) {
+            blocked = true;
+            break;
+          }
+          if (this.world && this.world.getObjectsAt(bx, by).length > 0) {
+            blocked = true;
+            break;
+          }
+        }
+        if (blocked) break;
+      }
+
+      if (!blocked) {
+        return { x, y };
+      }
+    }
+    return null;
   }
 
   private async advanceDay(): Promise<void> {

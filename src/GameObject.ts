@@ -18,11 +18,14 @@ export class GameObject extends Container {
   }
 
   public isAt(gridX: number, gridY: number): boolean {
+    // Anchor is bottom-left
+    // x: [gridX, gridX + width - 1]
+    // y: [gridY - height + 1, gridY]
     return (
       gridX >= this.gridX &&
       gridX < this.gridX + this.widthTiles &&
-      gridY >= this.gridY &&
-      gridY < this.gridY + this.heightTiles
+      gridY <= this.gridY &&
+      gridY > this.gridY - this.heightTiles
     );
   }
 

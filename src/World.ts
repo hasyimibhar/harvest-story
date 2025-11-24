@@ -3,7 +3,6 @@ import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
 import { Soil } from "./Soil";
 import { Player } from "./Player";
-import { Fence } from "./Fence";
 
 export class World extends Container {
   private _tileMap: TileMap;
@@ -114,44 +113,23 @@ export class World extends Container {
     const oldGridX = Math.floor(oldX / TileMap.TILE_SIZE);
     const oldGridY = Math.floor(oldY / TileMap.TILE_SIZE);
 
-    // Remove from old pos
-    if (this.isValidGrid(oldGridX, oldGridY)) {
-      const cell = this.grid[oldGridX][oldGridY];
-      const index = cell.indexOf(obj);
-      if (index > -1) {
-        cell.splice(index, 1);
+    // Remove from old pos (all occupied tiles)
+    for (let i = 0; i < obj.widthTiles; i++) {
+      for (let j = 0; j < obj.heightTiles; j++) {
+        const x = oldGridX + i;
+        const y = oldGridY - j;
+        if (this.isValidGrid(x, y)) {
+          const cell = this.grid[x][y];
+          const index = cell.indexOf(obj);
+          if (index > -1) {
+            cell.splice(index, 1);
+          }
+        }
       }
     }
 
     // Add to new pos
     this.addToGrid(obj);
-  }
-
-  private addToGrid(obj: GameObject): void {
-    const gx = Math.floor(obj.x / TileMap.TILE_SIZE);
-    const gy = Math.floor(obj.y / TileMap.TILE_SIZE);
-    if (this.isValidGrid(gx, gy)) {
-      this.grid[gx][gy].push(obj);
-      // We might want to sort this list by layer/z-index if we rely on it for rendering order logic?
-      // But rendering is handled by Containers.
-      // This list is for logic (collision, interaction).
-      // Interaction usually wants top-most.
-      // If we push, we assume added in order.
-      // If we have layers, we might want to ensure Objects are after Soil in this list?
-      // If we add Soil first, then Objects, it's fine.
-    }
-  }
-
-  private removeFromGrid(obj: GameObject): void {
-    const gx = Math.floor(obj.x / TileMap.TILE_SIZE);
-    const gy = Math.floor(obj.y / TileMap.TILE_SIZE);
-    if (this.isValidGrid(gx, gy)) {
-      const cell = this.grid[gx][gy];
-      const index = cell.indexOf(obj);
-      if (index > -1) {
-        cell.splice(index, 1);
-      }
-    }
   }
 
   private isValidGrid(x: number, y: number): boolean {
@@ -211,31 +189,66 @@ export class World extends Container {
     }
 
     // Check if tile type is valid
-    // We need to get tile type from TileMap.
-    // Since TileMap doesn't expose getTileAt, we can check isBlocked for rocks.
-    // But Fence logic says "Grass or Soil".
-    // TileMap.isBlocked returns true for rocks.
     if (!_obj.canBePlacedOn(this, x, y)) {
       return false;
     }
 
     // Check for other objects blocking
-    const objects = this.getObjectsAt(x, y);
-    for (const other of objects) {
-      // Special case: Fence can be placed on Soil
-      // If 'other' is Soil, it's okay IF the object allows it.
-      // But Soil is an object.
-      // We need a way to check if 'other' is Soil.
-      // For now, let's assume if there's ANY object, we can't place, UNLESS it's Soil.
-      // But we don't have instanceof check easily without importing Soil.
-      // Let's use isSolid. Soil is NOT solid.
-      if (other.isSolid) {
-        return false;
+    // Iterate over all tiles occupied by the object
+    // Anchor is bottom-left, so it occupies:
+    // x: [gridX, gridX + width - 1]
+    // y: [gridY - height + 1, gridY]
+    for (let i = 0; i < _obj.widthTiles; i++) {
+      for (let j = 0; j < _obj.heightTiles; j++) {
+        const checkX = x + i;
+        const checkY = y - j;
+
+        const objects = this.getObjectsAt(checkX, checkY);
+        for (const other of objects) {
+          if (other.isSolid) {
+            return false;
+          }
+        }
       }
-      // If it's not solid (like Soil), we can place on it?
-      // Yes, user said "For fence, it can only be placed down on grass or soil."
     }
 
     return true;
+  }
+
+  private addToGrid(obj: GameObject): void {
+    const gx = Math.floor(obj.x / TileMap.TILE_SIZE);
+    const gy = Math.floor(obj.y / TileMap.TILE_SIZE);
+
+    // Add to all occupied tiles
+    // Anchor is bottom-left
+    for (let i = 0; i < obj.widthTiles; i++) {
+      for (let j = 0; j < obj.heightTiles; j++) {
+        const x = gx + i;
+        const y = gy - j;
+        if (this.isValidGrid(x, y)) {
+          this.grid[x][y].push(obj);
+        }
+      }
+    }
+  }
+
+  private removeFromGrid(obj: GameObject): void {
+    const gx = Math.floor(obj.x / TileMap.TILE_SIZE);
+    const gy = Math.floor(obj.y / TileMap.TILE_SIZE);
+
+    // Remove from all occupied tiles
+    for (let i = 0; i < obj.widthTiles; i++) {
+      for (let j = 0; j < obj.heightTiles; j++) {
+        const x = gx + i;
+        const y = gy - j;
+        if (this.isValidGrid(x, y)) {
+          const cell = this.grid[x][y];
+          const index = cell.indexOf(obj);
+          if (index > -1) {
+            cell.splice(index, 1);
+          }
+        }
+      }
+    }
   }
 }
