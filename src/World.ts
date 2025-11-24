@@ -3,6 +3,7 @@ import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
 import { Soil } from "./Soil";
 import { Player } from "./Player";
+import { Fence } from "./Fence";
 
 export class World extends Container {
   private _tileMap: TileMap;
@@ -188,15 +189,14 @@ export class World extends Container {
     targetY: number,
   ): boolean {
     if (this.canPlaceObject(obj, targetX, targetY)) {
+      obj.gridX = targetX;
+      obj.gridY = targetY;
+      obj.x = targetX * TileMap.TILE_SIZE;
+      obj.y = targetY * TileMap.TILE_SIZE;
+      this.addObject(obj);
+
       // Handle placement logic (e.g., Weed destroys itself)
-      if (obj.onPlace()) {
-        // Add back to game world if onPlace returns true
-        obj.gridX = targetX;
-        obj.gridY = targetY;
-        obj.x = targetX * TileMap.TILE_SIZE;
-        obj.y = targetY * TileMap.TILE_SIZE;
-        this.addObject(obj);
-      }
+      obj.onPlace(this, targetX, targetY);
 
       return true;
     }
@@ -215,7 +215,7 @@ export class World extends Container {
     // Since TileMap doesn't expose getTileAt, we can check isBlocked for rocks.
     // But Fence logic says "Grass or Soil".
     // TileMap.isBlocked returns true for rocks.
-    if (this._tileMap.isBlocked(x, y)) {
+    if (!_obj.canBePlacedOn(this, x, y)) {
       return false;
     }
 
@@ -236,6 +236,6 @@ export class World extends Container {
       // Yes, user said "For fence, it can only be placed down on grass or soil."
     }
 
-    return _obj.canBePlacedOn(this, x, y);
+    return true;
   }
 }

@@ -1,6 +1,7 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
 import { GameObject } from "../GameObject";
 import { TileMap } from "../TileMap";
+import { World } from "../World";
 
 export class Turnip extends GameObject {
   constructor(gridX: number, gridY: number, renderer: Renderer) {
@@ -26,9 +27,8 @@ export class Turnip extends GameObject {
     this.addChild(sprite);
   }
 
-  public onPlace(): boolean {
+  public onPlace(_world: World, _gridX: number, _gridY: number): void {
     // Destroy on place (like Weed)
     this.kill();
-    return false;
   }
 }

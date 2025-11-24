@@ -32,10 +32,6 @@ export class GameObject extends Container {
 
   public isPickupable: boolean = false;
 
-  public onPlace(): boolean {
-    return true;
-  }
-
   public onDayPass(): boolean {
     return true;
   }
@@ -48,8 +44,11 @@ export class GameObject extends Container {
     this._isKilled = true;
   }
 
-  // Handles special case, e.g. certain objects can only be placed on grass
-  public canBePlacedOn(_world: World, _gridX: number, _gridY: number): boolean {
-    return true;
+  public canBePlacedOn(world: World, gridX: number, gridY: number): boolean {
+    return !world.tileMap.isBlocked(gridX, gridY);
+  }
+
+  public onPlace(_world: World, _gridX: number, _gridY: number) {
+    // Do nothing
   }
 }

@@ -1,6 +1,7 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
 import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
+import { World } from "./World";
 
 export class Fence extends GameObject {
   constructor(gridX: number, gridY: number, renderer: Renderer) {
@@ -19,5 +20,22 @@ export class Fence extends GameObject {
     sprite.y = 0;
 
     this.addChild(sprite);
+  }
+
+  public canBePlacedOn(world: World, gridX: number, gridY: number): boolean {
+    const tileType = world.tileMap.getTileType(gridX, gridY);
+    if (tileType === 2) {
+      return true;
+    }
+
+    return super.canBePlacedOn(world, gridX, gridY);
+  }
+
+  public onPlace(world: World, gridX: number, gridY: number): void {
+    const tileType = world.tileMap.getTileType(gridX, gridY);
+    if (tileType === 2) {
+      console.log("Fence thrown into water!");
+      this.kill();
+    }
   }
 }

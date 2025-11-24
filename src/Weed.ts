@@ -1,6 +1,7 @@
 import { Graphics, Renderer, Sprite } from "pixi.js";
 import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
+import { World } from "./World";
 
 export class Weed extends GameObject {
   constructor(gridX: number, gridY: number, renderer: Renderer) {
@@ -25,9 +26,8 @@ export class Weed extends GameObject {
     this.addChild(sprite);
   }
 
-  public onPlace(): boolean {
+  public onPlace(_world: World, _gridX: number, _gridY: number): void {
     // Destroy on place
     this.kill();
-    return false;
   }
 }
