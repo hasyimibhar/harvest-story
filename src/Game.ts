@@ -153,7 +153,7 @@ export class Game {
         fill: 0xffffff,
       },
     });
-    this.toolText.x = this.app.screen.width - 250;
+    this.toolText.x = this.app.screen.width - 400;
     this.toolText.y = this.app.screen.height - 40;
     this.app.stage.addChild(this.toolText);
 
@@ -173,7 +173,9 @@ export class Game {
 
         if (this.player) {
           if (this.toolText) {
-            this.toolText.text = `Tool: ${this.player.getSelectedTool()?.name || "None"}`;
+            const tool = this.player.getSelectedTool();
+            const toolName = tool?.name || "None";
+            this.toolText.text = `Tool: ${toolName}`;
           }
         }
       }
