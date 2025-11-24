@@ -205,6 +205,12 @@ export class World extends Container {
 
         const objects = this.getObjectsAt(checkX, checkY);
         for (const other of objects) {
+          // This object is scheduled to be removed,
+          // so it should be allowed to be placed on top of it
+          if (other.isKilled) {
+            continue;
+          }
+
           if (other.isSolid) {
             return false;
           }

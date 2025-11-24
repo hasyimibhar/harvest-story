@@ -110,7 +110,7 @@ export class Player extends Container {
   public cycleTool(direction: number = 1): void {
     this.toolBag.cycle(direction);
     const tool = this.getSelectedTool();
-    console.log(`Selected tool: ${tool ? tool.name : "None"}`);
+    console.log(`Selected tool: ${tool ? tool.name : "None"} `);
   }
 
   public getSelectedTool(): Tool | null {

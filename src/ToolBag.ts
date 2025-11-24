@@ -4,11 +4,13 @@ import { Hoe } from "./tools/Hoe";
 import { Sickle } from "./tools/Sickle";
 import { WateringCan } from "./tools/WateringCan";
 import { TurnipSeed } from "./tools/TurnipSeed";
+import { Axe } from "./tools/Axe";
 
 export class ToolBag {
   public tools: (Tool | null)[] = [
     new Hammer(),
     new Hoe(),
+    new Axe(),
     new Sickle(),
     new WateringCan(),
     new TurnipSeed(),

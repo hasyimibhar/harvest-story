@@ -6,6 +6,7 @@ import { Boulder } from "./Boulder";
 import { Soil } from "./Soil";
 import { Fence } from "./Fence";
 import { Weed } from "./Weed";
+import { WoodStump } from "./WoodStump";
 import { World } from "./World";
 
 export class Game {
@@ -97,6 +98,15 @@ export class Game {
       if (pos) {
         const fence = new Fence(pos.x, pos.y, this.app.renderer);
         this.world.addObject(fence);
+      }
+    }
+
+    // Add some wood stumps
+    for (let i = 0; i < 2; i++) {
+      const pos = this.findSafePosition(2, 2);
+      if (pos) {
+        const stump = new WoodStump(pos.x, pos.y, this.app.renderer);
+        this.world.addObject(stump);
       }
     }
 
