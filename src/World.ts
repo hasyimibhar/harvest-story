@@ -155,7 +155,7 @@ export class World extends Container {
 
         // Call onDayPass for each object
         for (const obj of objects) {
-          obj.onDayPass();
+          obj.onDayPass(this.player!);
         }
       }
     }

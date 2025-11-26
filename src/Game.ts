@@ -7,6 +7,7 @@ import { Soil } from "./Soil";
 import { Fence } from "./Fence";
 import { Weed } from "./Weed";
 import { WoodStump } from "./WoodStump";
+import { ShippingBin } from "./ShippingBin";
 import { World } from "./World";
 
 export class Game {
@@ -18,6 +19,7 @@ export class Game {
   private currentDay: number = 1;
   private fadeOverlay: Graphics | undefined;
   private dayText: Text | undefined;
+  private goldText: Text | undefined;
   private toolText: Text | undefined;
   private isTransitioning: boolean = false;
 
@@ -82,6 +84,10 @@ export class Game {
       }
     }
 
+    // Add Shipping Bin
+    const shippingBin = new ShippingBin(startX - 1, startY, this.app.renderer);
+    this.world.addObject(shippingBin);
+
     // Add some boulders, some might be on top of soil
     // Add some boulders (2x2), ensure no overlap
     for (let i = 0; i < 2; i++) {
@@ -119,7 +125,6 @@ export class Game {
       }
     }
 
-
     this.player = new Player(
       this.app.renderer,
       this.inputManager,
@@ -156,6 +161,19 @@ export class Game {
     this.dayText.x = 10;
     this.dayText.y = this.app.screen.height - 40;
     this.app.stage.addChild(this.dayText);
+
+    // Create gold text
+    this.goldText = new Text({
+      text: `${this.player.gold} G`,
+      style: {
+        fontFamily: "Arial",
+        fontSize: 24,
+        fill: 0xffd700, // Gold color
+      },
+    });
+    this.goldText.x = 150; // Position beside day text
+    this.goldText.y = this.app.screen.height - 40;
+    this.app.stage.addChild(this.goldText);
 
     // Create tool text
     this.toolText = new Text({
@@ -245,11 +263,19 @@ export class Game {
     this.currentDay++;
     if (this.dayText) {
       this.dayText.text = `Day ${this.currentDay}`;
+      if (this.player && this.goldText) {
+        this.goldText.text = `${this.player.gold} G`;
+      }
     }
 
     // Process day pass events (grow plants, reset water)
     if (this.world) {
       this.world.onDayPass();
+
+      // Update gold text immediately
+      if (this.player && this.goldText) {
+        this.goldText.text = `${this.player.gold} G`;
+      }
     }
 
     // Fade in (0.5s)

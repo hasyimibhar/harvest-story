@@ -16,6 +16,7 @@ export class Player extends Container {
 
   private heldObject: GameObject | null = null;
   public rucksack: Rucksack = new Rucksack();
+  public gold: number = 100;
 
   // Tool system
   public toolBag: ToolBag = new ToolBag();
@@ -180,12 +181,26 @@ export class Player extends Container {
     }
 
     if (this.heldObject) {
-      this.removeChild(this.heldObject);
+      // Check if we can give the item to an object
+      const objects = this.world.getObjectsAt(targetX, targetY);
+      let given = false;
+      for (const obj of objects) {
+        if (obj.receiveItem(this.heldObject)) {
+          this.removeChild(this.heldObject);
+          this.heldObject = null;
+          given = true;
+          break;
+        }
+      }
 
-      if (this.world.placeObject(this.heldObject, targetX, targetY)) {
-        this.heldObject = null;
-      } else {
-        this.addChild(this.heldObject);
+      if (!given && this.heldObject) {
+        this.removeChild(this.heldObject);
+
+        if (this.world.placeObject(this.heldObject, targetX, targetY)) {
+          this.heldObject = null;
+        } else {
+          this.addChild(this.heldObject);
+        }
       }
     } else {
       // Try to interact or pickup

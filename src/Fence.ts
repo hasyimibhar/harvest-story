@@ -22,6 +22,10 @@ export class Fence extends GameObject {
     this.addChild(sprite);
   }
 
+  get sellValue(): number {
+    return 10;
+  }
+
   public canBePlacedOn(world: World, gridX: number, gridY: number): boolean {
     const tileType = world.tileMap.getTileType(gridX, gridY);
     if (tileType === 2) {

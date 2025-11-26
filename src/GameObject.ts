@@ -1,6 +1,7 @@
 import { Container } from "pixi.js";
 import { TileMap } from "./TileMap";
 import { World } from "./World";
+import type { Player } from "./Player";
 
 export class GameObject extends Container {
   public isSolid: boolean = true;
@@ -33,9 +34,17 @@ export class GameObject extends Container {
     return null;
   }
 
+  public receiveItem(_item: GameObject): boolean {
+    return false;
+  }
+
   public isPickupable: boolean = false;
 
-  public onDayPass(): boolean {
+  get sellValue(): number {
+    return 0;
+  }
+
+  public onDayPass(_player: Player): boolean {
     return true;
   }
 

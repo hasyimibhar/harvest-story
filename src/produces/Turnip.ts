@@ -27,6 +27,10 @@ export class Turnip extends GameObject {
     this.addChild(sprite);
   }
 
+  get sellValue(): number {
+    return 60;
+  }
+
   public onPlace(_world: World, _gridX: number, _gridY: number): void {
     // Destroy on place (like Weed)
     this.kill();
