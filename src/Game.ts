@@ -20,6 +20,7 @@ export class Game {
   private fadeOverlay: Graphics | undefined;
   private dayText: Text | undefined;
   private goldText: Text | undefined;
+  private staminaText: Text | undefined;
   private toolText: Text | undefined;
   private isTransitioning: boolean = false;
 
@@ -175,6 +176,19 @@ export class Game {
     this.goldText.y = this.app.screen.height - 40;
     this.app.stage.addChild(this.goldText);
 
+    // Create stamina text
+    this.staminaText = new Text({
+      text: `${this.player.stamina}/${this.player.maxStamina}`,
+      style: {
+        fontFamily: "Arial",
+        fontSize: 24,
+        fill: 0x00ff00, // Green color
+      },
+    });
+    this.staminaText.x = 250; // Position beside gold text
+    this.staminaText.y = this.app.screen.height - 40;
+    this.app.stage.addChild(this.staminaText);
+
     // Create tool text
     this.toolText = new Text({
       text: `Tool: ${this.player?.getSelectedTool()?.name || "None"}`,
@@ -198,17 +212,13 @@ export class Game {
           this.advanceDay();
         }
 
-        if (this.world) {
-          this.world.update(ticker);
-        }
+        this.world!.update(ticker);
 
-        if (this.player) {
-          if (this.toolText) {
-            const tool = this.player.getSelectedTool();
-            const toolName = tool?.name || "None";
-            this.toolText.text = `Tool: ${toolName}`;
-          }
-        }
+        const tool = this.player!.getSelectedTool();
+        const toolName = tool?.name || "None";
+        this.toolText!.text = `Tool: ${toolName}`;
+        this.goldText!.text = `${this.player!.gold} G`;
+        this.staminaText!.text = `${this.player!.stamina}/${this.player!.maxStamina}`;
       }
 
       this.inputManager.update();
@@ -261,22 +271,14 @@ export class Game {
 
     // Increment day
     this.currentDay++;
-    if (this.dayText) {
-      this.dayText.text = `Day ${this.currentDay}`;
-      if (this.player && this.goldText) {
-        this.goldText.text = `${this.player.gold} G`;
-      }
-    }
+    this.dayText!.text = `Day ${this.currentDay}`;
 
     // Process day pass events (grow plants, reset water)
-    if (this.world) {
-      this.world.onDayPass();
+    this.world!.onDayPass();
 
-      // Update gold text immediately
-      if (this.player && this.goldText) {
-        this.goldText.text = `${this.player.gold} G`;
-      }
-    }
+    this.goldText!.text = `${this.player!.gold} G`;
+    this.player!.stamina = this.player!.maxStamina;
+    this.staminaText!.text = `${this.player!.stamina}/${this.player!.maxStamina}`;
 
     // Fade in (0.5s)
     await this.animateFade(1, 0, 500);

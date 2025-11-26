@@ -17,6 +17,8 @@ export class Player extends Container {
   private heldObject: GameObject | null = null;
   public rucksack: Rucksack = new Rucksack();
   public gold: number = 100;
+  public stamina: number = 20;
+  public maxStamina: number = 20;
 
   // Tool system
   public toolBag: ToolBag = new ToolBag();
@@ -122,10 +124,18 @@ export class Player extends Container {
     const currentTool = this.getSelectedTool();
     if (!currentTool) return; // No tool in this slot
 
+    if (this.stamina < currentTool.staminaCost) {
+      console.log("Not enough stamina!");
+      return;
+    }
+
     const used = currentTool.use(this);
 
-    if (used && currentTool.isConsumable && currentTool.isDepleted) {
-      this.toolBag.setTool(this.toolBag.selectedIndex, null);
+    if (used) {
+      this.stamina -= currentTool.staminaCost;
+      if (currentTool.isConsumable && currentTool.isDepleted) {
+        this.toolBag.setTool(this.toolBag.selectedIndex, null);
+      }
     }
   }
 

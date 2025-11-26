@@ -3,6 +3,7 @@ import { Player } from "../Player";
 export abstract class Tool {
   protected _name: string;
   protected _isConsumable: boolean;
+  public staminaCost: number = 1;
 
   constructor(name: string, isConsumable: boolean = false) {
     this._name = name;
