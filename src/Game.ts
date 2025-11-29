@@ -61,12 +61,6 @@ export class Game {
     this.world = new World(this.tileMap);
     this.app.stage.addChild(this.world);
 
-    // Center the world container
-    this.world.x =
-      (this.app.screen.width - TileMap.MAP_WIDTH * TileMap.TILE_SIZE) / 2;
-    this.world.y =
-      (this.app.screen.height - TileMap.MAP_HEIGHT * TileMap.TILE_SIZE) / 2;
-
     // Soil Layer and Object Layer are managed by World now
 
     // Randomly place a 10x10 patch of soil
@@ -213,6 +207,28 @@ export class Game {
         }
 
         this.world!.update(ticker);
+
+        // Camera Logic
+        if (this.player && this.world) {
+          // Target position (center player)
+          const targetX =
+            this.app.screen.width / 2 - this.player.x * this.world.scale.x;
+          const targetY =
+            this.app.screen.height / 2 - this.player.y * this.world.scale.y;
+
+          // Clamp to map bounds
+          const minX =
+            this.app.screen.width -
+            TileMap.MAP_WIDTH * TileMap.TILE_SIZE * this.world.scale.x;
+          const maxX = 0;
+          const minY =
+            this.app.screen.height -
+            TileMap.MAP_HEIGHT * TileMap.TILE_SIZE * this.world.scale.y;
+          const maxY = 0;
+
+          this.world.x = Math.max(minX, Math.min(maxX, targetX));
+          this.world.y = Math.max(minY, Math.min(maxY, targetY));
+        }
 
         const tool = this.player!.getSelectedTool();
         const toolName = tool?.name || "None";

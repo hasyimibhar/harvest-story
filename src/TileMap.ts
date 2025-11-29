@@ -2,8 +2,8 @@ import { Container, Sprite, Texture, Graphics } from "pixi.js";
 
 export class TileMap extends Container {
   public static readonly TILE_SIZE = 32;
-  public static readonly MAP_WIDTH = 20;
-  public static readonly MAP_HEIGHT = 20;
+  public static readonly MAP_WIDTH = 100;
+  public static readonly MAP_HEIGHT = 100;
 
   private mapData: number[][] = [];
   constructor(
