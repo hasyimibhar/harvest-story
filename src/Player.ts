@@ -49,19 +49,24 @@ export class Player extends Container {
     let dx = 0;
     let dy = 0;
 
+    let currentSpeed = this.speed;
+    if (this.inputManager.isKeyDown("ShiftLeft")) {
+      currentSpeed *= 3;
+    }
+
     if (this.inputManager.isKeyDown("ArrowUp")) {
-      dy -= this.speed * delta;
+      dy -= currentSpeed * delta;
       this.direction = 0; // Up
     } else if (this.inputManager.isKeyDown("ArrowDown")) {
-      dy += this.speed * delta;
+      dy += currentSpeed * delta;
       this.direction = 2; // Down
     }
 
     if (this.inputManager.isKeyDown("ArrowLeft")) {
-      dx -= this.speed * delta;
+      dx -= currentSpeed * delta;
       this.direction = 3; // Left
     } else if (this.inputManager.isKeyDown("ArrowRight")) {
-      dx += this.speed * delta;
+      dx += currentSpeed * delta;
       this.direction = 1; // Right
     }
 
