@@ -3,7 +3,6 @@ import { TileMap } from "./TileMap";
 import { Player } from "./Player";
 import { InputManager } from "./InputManager";
 import { Boulder } from "./Boulder";
-import { Soil } from "./Soil";
 import { Fence } from "./Fence";
 import { Weed } from "./Weed";
 import { WoodStump } from "./WoodStump";
@@ -55,7 +54,17 @@ export class Game {
       .fill(0x0000ff); // Blue water
     const waterTexture = this.app.renderer.generateTexture(waterGraphics);
 
-    this.tileMap = new TileMap(grassTexture, rockTexture, waterTexture);
+    const soilGraphics = new Graphics()
+      .rect(0, 0, TileMap.TILE_SIZE, TileMap.TILE_SIZE)
+      .fill(0xd2b48c); // Light brown (untilled soil)
+    const soilTexture = this.app.renderer.generateTexture(soilGraphics);
+
+    this.tileMap = new TileMap(
+      grassTexture,
+      rockTexture,
+      waterTexture,
+      soilTexture,
+    );
 
     // Create a world container to center everything
     this.world = new World(this.tileMap);
@@ -74,8 +83,7 @@ export class Game {
 
     for (let x = startX; x < startX + 10; x++) {
       for (let y = startY; y < startY + 10; y++) {
-        const soil = new Soil(x, y, this.app.renderer);
-        this.world.addObject(soil);
+        this.tileMap.setTileType(x, y, 3); // Soil tile
       }
     }
 

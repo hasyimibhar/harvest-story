@@ -10,6 +10,7 @@ export class TileMap extends Container {
     private grassTexture: Texture,
     private rockTexture: Texture,
     private waterTexture: Texture,
+    private soilTexture: Texture,
   ) {
     super();
     this.generateMap();
@@ -62,6 +63,8 @@ export class TileMap extends Container {
           sprite = new Sprite(this.rockTexture);
         } else if (tileType === 2) {
           sprite = new Sprite(this.waterTexture);
+        } else if (tileType === 3) {
+          sprite = new Sprite(this.soilTexture);
         } else {
           sprite = new Sprite(this.grassTexture);
         }
@@ -100,5 +103,26 @@ export class TileMap extends Container {
       return -1; // Invalid tile
     }
     return this.mapData[y][x];
+  }
+
+  public setTileType(x: number, y: number, type: number): void {
+    if (x >= 0 && x < TileMap.MAP_WIDTH && y >= 0 && y < TileMap.MAP_HEIGHT) {
+      this.mapData[y][x] = type;
+      // Re-render specifically this tile would be better, but for now we rely on initial render or full re-render if needed.
+      // Actually, since we are using sprites, we should update the sprite at this location.
+      // But we don't store references to sprites easily.
+      // For now, let's assume this is only used during generation/setup before render.
+      // If used after render, we need to update the visual.
+
+      // Let's implement a simple visual update if children exist
+      const index = y * TileMap.MAP_WIDTH + x;
+      if (index < this.children.length) {
+        const sprite = this.children[index] as Sprite;
+        if (type === 1) sprite.texture = this.rockTexture;
+        else if (type === 2) sprite.texture = this.waterTexture;
+        else if (type === 3) sprite.texture = this.soilTexture;
+        else sprite.texture = this.grassTexture;
+      }
+    }
   }
 }

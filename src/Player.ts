@@ -44,6 +44,10 @@ export class Player extends Container {
     // this.scale.set(0.8); // Make player slightly smaller than tile
   }
 
+  public getRenderer(): Renderer {
+    return this.renderer;
+  }
+
   public update(ticker: Ticker): void {
     const delta = ticker.deltaTime;
     let dx = 0;
@@ -170,9 +174,7 @@ export class Player extends Container {
     return this.world;
   }
 
-  public getRenderer(): Renderer {
-    return this.renderer;
-  }
+
 
   private interact(): void {
     const gridX = Math.floor(this.x / TileMap.TILE_SIZE);

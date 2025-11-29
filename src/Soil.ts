@@ -3,7 +3,7 @@ import { GameObject } from "./GameObject";
 import { TileMap } from "./TileMap";
 
 export class Soil extends GameObject {
-  private isTilled: boolean = false;
+  private isTilled: boolean = true;
   private __isWatered: boolean = false;
   private sprite: Sprite;
   private renderer: Renderer;
@@ -13,7 +13,7 @@ export class Soil extends GameObject {
     this.renderer = renderer;
     this.isSolid = false; // Soil is walkable
 
-    this.sprite = new Sprite(this.createTexture(0xd2b48c)); // Light brown
+    this.sprite = new Sprite(this.createTexture(0x8b4513)); // Dark brown (Tilled)
     this.addChild(this.sprite);
   }
 
@@ -30,12 +30,7 @@ export class Soil extends GameObject {
   }
 
   public till(): boolean {
-    if (!this.isTilled) {
-      this.isTilled = true;
-      this.sprite.texture = this.createTexture(0x8b4513); // Dark brown
-      return true;
-    }
-    return false;
+    return false; // Already tilled
   }
 
   public water(): boolean {
